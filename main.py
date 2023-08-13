@@ -22,12 +22,12 @@ def main():
     nomes_frequencia = []
 
     if not nomes:
-        return print(Ranking().geral())
+        return print(f"Ranking geral dos nomes:\n{Ranking().geral()}")
 
     for nome in nomes:
         nomes_frequencia.append(Item(nome).get_frequencia())
 
-    return print(Ranking(nomes_frequencia).nomes())
+    return print(f"Ranking dos nomes:\n{Ranking(nomes_frequencia).nomes()}")
 
 
 if __name__ == "__main__":
