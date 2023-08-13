@@ -15,10 +15,7 @@ class Ranking:
             ranking = res["ranking"]
             nome = res["nome"]
 
-            if not len(result):
-                result = f"{ranking}º - {nome}\n"
-            else:
-                result += f"{ranking}º - {nome}\n"
+            result += f"{ranking}º - {nome}\n"
 
         return result
 
@@ -33,9 +30,6 @@ class Ranking:
             nome = nome_list["nome"]
             ranking = index + 1
 
-            if not len(result):
-                result = f"{ranking}º - {nome}\n"
-            else:
-                result += f"{ranking}º - {nome}\n"
+            result += f"{ranking}º - {nome}\n"
 
         return result

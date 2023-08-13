@@ -25,12 +25,7 @@ def main():
         return print(Ranking().geral())
 
     for nome in nomes:
-        nome = nome.upper()
-
-        try:
-            nomes_frequencia.append(Item(nome).get_frequencia())
-        except IndexError:
-            return print(f"o nome {nome} é inválido, tente novamente!")
+        nomes_frequencia.append(Item(nome).get_frequencia())
 
     return print(Ranking(nomes_frequencia).nomes())
 
