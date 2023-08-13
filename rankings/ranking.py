@@ -5,21 +5,37 @@ class Ranking:
     def __init__(self, nomes_frequencia=[]) -> None:
         self.nomes_frequencia = nomes_frequencia
 
-    def geral(self) -> dict:
+    def geral(self) -> str:
         link = "https://servicodados.ibge.gov.br/api/v2/censos/nomes/ranking"
+        result = ""
+
         resposta = requests.get(link).json()
 
-        return resposta[0]["res"]
+        for res in resposta[0]["res"]:
+            ranking = res["ranking"]
+            nome = res["nome"]
 
-    def nomes(self):
+            if not len(result):
+                result = f"{ranking}º - {nome}\n"
+            else:
+                result += f"{ranking}º - {nome}\n"
+
+        return result
+
+    def nomes(self) -> str:
+        result = ""
+
         nomes_ordem = sorted(
             self.nomes_frequencia, key=lambda i: i["frequencia"], reverse=True
         )
 
-        ranking = 1
+        for index, nome_list in enumerate(nomes_ordem):
+            nome = nome_list["nome"]
+            ranking = index + 1
 
-        for nome in nomes_ordem:
-            nome["ranking"] = ranking
-            ranking += ranking
+            if not len(result):
+                result = f"{ranking}º - {nome}\n"
+            else:
+                result += f"{ranking}º - {nome}\n"
 
-        return nomes_ordem
+        return result
