@@ -1,1 +1,3 @@
-from .script import *
+from .arguments import arguments
+from .params import params
+from .script import definicao_title

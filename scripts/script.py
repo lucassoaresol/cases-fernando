@@ -1,16 +1,3 @@
-def params(localidade="", sexo="") -> dict | None:
-    payload = {}
-
-    if localidade:
-        payload["localidade"] = localidade
-
-    if sexo:
-        payload["sexo"] = sexo
-
-    if payload:
-        return payload
-
-
 def definicao_title(title: str, localidade="", sexo="") -> str:
     if sexo == "M":
         title += " do sexo Masculino"
