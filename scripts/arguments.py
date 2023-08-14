@@ -30,4 +30,18 @@ def arguments() -> ArgumentParser:
         help="Digite 'M', para o sexo masculino, ou 'F', para o feminino caso deseje obter o ranking por sexo",
     )
 
+    parser.add_argument(
+        "-r",
+        "--retry",
+        type=int,
+        help="Definir o número de tentativas",
+    )
+
+    parser.add_argument(
+        "-t",
+        "--timeout",
+        type=int,
+        help="Definir o timeout",
+    )
+
     return parser

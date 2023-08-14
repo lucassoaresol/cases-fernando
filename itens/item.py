@@ -1,15 +1,15 @@
-import requests
 from scripts import params
+from services import Api
 
 
 class Item:
-    def __init__(self, nomes: list[str], sexo="") -> None:
+    def __init__(self, api: Api, nomes: list[str], sexo="") -> None:
+        self.api = api
         self.nomes = nomes
         self.sexo = sexo
 
     def get_frequencia(self, nome: str, localidade="") -> dict:
-        link = f"https://servicodados.ibge.gov.br/api/v2/censos/nomes/{nome}"
-        resposta = requests.get(link, params=params(localidade, self.sexo)).json()
+        resposta = self.api.get(nome, params(localidade, self.sexo))
         frequencia = 0
 
         if resposta:

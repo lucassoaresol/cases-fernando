@@ -1,6 +1,8 @@
 from itens import Item
 from rankings import Ranking
 from scripts import arguments
+from services import Api
+from urllib3.exceptions import MaxRetryError
 
 
 def main():
@@ -8,20 +10,33 @@ def main():
     nomes = args.nomes
     localidades = args.localidades
     sexo = args.sexo
+    retry = args.retry
+    timeout = args.timeout
+    api = Api(retry, timeout)
 
     if not nomes:
-        return print(Ranking().geral(localidades, sexo))
+        try:
+            return print(Ranking(api).geral(localidades, sexo))
+        except MaxRetryError:
+            return print("Número de tentativas excedido")
 
     if localidades:
-        return print(
-            Ranking(
-                nomes_frequencia_localidade=Item(nomes, sexo).frequencia_localidades(
-                    localidades
-                )
-            ).nomes(sexo)
-        )
+        try:
+            return print(
+                Ranking(
+                    api,
+                    nomes_frequencia_localidade=Item(
+                        api, nomes, sexo
+                    ).frequencia_localidades(localidades),
+                ).nomes(sexo)
+            )
+        except MaxRetryError:
+            return print("Número de tentativas excedido")
 
-    return print(Ranking(Item(nomes, sexo).frequencia_nome()).nomes(sexo))
+    try:
+        return print(Ranking(api, Item(api, nomes, sexo).frequencia_nome()).nomes(sexo))
+    except MaxRetryError:
+        return print("Número de tentativas excedido")
 
 
 if __name__ == "__main__":

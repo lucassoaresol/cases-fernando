@@ -1,21 +1,23 @@
-import requests
 from statistics import mean
 from scripts import params, definicao_title
+from services import Api
 
 
 class Ranking:
-    def __init__(self, nomes_frequencia=[], nomes_frequencia_localidade=[]) -> None:
+    def __init__(
+        self, api: Api, nomes_frequencia=[], nomes_frequencia_localidade=[]
+    ) -> None:
+        self.api = api
         self.nomes_frequencia = nomes_frequencia
         self.nomes_frequencia_localidade = nomes_frequencia_localidade
 
     def get(self, localidade="", sexo="") -> str:
-        link = "https://servicodados.ibge.gov.br/api/v2/censos/nomes/ranking"
         result = ""
 
         if localidade:
             result = f"\nLocalidade: {localidade}\n"
 
-        resposta = requests.get(link, params=params(localidade, sexo)).json()
+        resposta = self.api.get("ranking", params=params(localidade, sexo))
 
         if resposta:
             for res in resposta[0]["res"]:
