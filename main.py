@@ -16,18 +16,40 @@ def main():
         help="Digite os nomes que deseja obter o ranking",
     )
 
+    parser.add_argument(
+        "-l",
+        "--localidades",
+        nargs="+",
+        type=int,
+        help="Digite as localidades que deseja obter o ranking",
+    )
+
+    parser.add_argument(
+        "-s",
+        "--sexo",
+        type=str,
+        choices=["M", "F"],
+        help="Digite 'M', para o sexo masculino, ou 'F', para o feminino caso deseje obter o ranking por sexo",
+    )
+
     args = parser.parse_args()
     nomes = args.nomes
-
-    nomes_frequencia = []
+    localidades = args.localidades
+    sexo = args.sexo
 
     if not nomes:
-        return print(f"Ranking geral dos nomes:\n{Ranking().geral()}")
+        return print(Ranking().geral(localidades, sexo))
 
-    for nome in nomes:
-        nomes_frequencia.append(Item(nome).get_frequencia())
+    if localidades:
+        return print(
+            Ranking(
+                nomes_frequencia_localidade=Item(nomes, sexo).frequencia_localidades(
+                    localidades
+                )
+            ).nomes(sexo)
+        )
 
-    return print(f"Ranking dos nomes:\n{Ranking(nomes_frequencia).nomes()}")
+    return print(Ranking(Item(nomes, sexo).frequencia_nome()).nomes(sexo))
 
 
 if __name__ == "__main__":
