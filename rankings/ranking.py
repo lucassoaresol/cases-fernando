@@ -55,33 +55,27 @@ class Ranking:
         return result
 
     def geral(self, localidades=[], sexo="") -> str:
+        is_localidade = not localidades == None
+        conteudo = definicao_title("Ranking geral dos nomes", is_localidade, sexo)
+
         if localidades:
-            conteudo = ""
-            for index, localidade in enumerate(localidades):
-                if index == 0:
-                    conteudo = definicao_title(
-                        "Ranking geral dos nomes", localidade, sexo
-                    )
-
+            for localidade in localidades:
                 conteudo += self.get(localidade, sexo)
-            return conteudo
+        else:
+            conteudo += self.get(sexo=sexo)
 
-        return definicao_title("Ranking geral dos nomes", sexo=sexo) + self.get(
-            sexo=sexo
-        )
+        return conteudo
 
     def nomes(self, sexo="") -> str:
+        is_localidade = not len(self.nomes_frequencia_localidade) == 0
+        conteudo = definicao_title("Ranking dos nomes", is_localidade, sexo)
         if self.nomes_frequencia_localidade:
-            conteudo = ""
-            for index, localidade_nomes in enumerate(self.nomes_frequencia_localidade):
+            for localidade_nomes in self.nomes_frequencia_localidade:
                 localidade = localidade_nomes["localidade"]
                 self.nomes_frequencia = localidade_nomes["res"]
-
-                if index == 0:
-                    conteudo = definicao_title("Ranking dos nomes", localidade, sexo)
-
                 conteudo += self.ordem_nome(localidade)
 
-            return conteudo
+        else:
+            conteudo += self.ordem_nome()
 
-        return definicao_title("Ranking dos nomes", sexo=sexo) + self.ordem_nome()
+        return conteudo
