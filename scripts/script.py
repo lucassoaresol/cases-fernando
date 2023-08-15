@@ -1,8 +1,4 @@
-def definicao_title(
-    title: str,
-    is_localidade: bool,
-    sexo="",
-) -> str:
+def definicao_title(title: str, is_localidade: bool, sexo="") -> str:
     if sexo == "M":
         title += " do sexo Masculino"
 
