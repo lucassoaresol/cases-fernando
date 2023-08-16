@@ -1,6 +1,15 @@
 from argparse import ArgumentParser
 
 
+def type_decada(decada: str) -> int:
+    result = int(decada)
+
+    if result < 1930 or result % 10 != 0:
+        raise ValueError
+
+    return result
+
+
 def arguments() -> ArgumentParser:
     parser = ArgumentParser(
         description="Obter um ranking de nomes brasileiros baseado na frequência dos mesmos através do último senso IBGE disponível"
@@ -42,6 +51,14 @@ def arguments() -> ArgumentParser:
         "--timeout",
         type=int,
         help="Definir o timeout",
+    )
+
+    parser.add_argument(
+        "-d",
+        "--decadas",
+        nargs="+",
+        type=type_decada,
+        help="Digite as décadas que deseja obter o ranking",
     )
 
     return parser

@@ -5,19 +5,20 @@ from services import Api
 
 class Ranking:
     def __init__(
-        self, api: Api, nomes_frequencia=[], nomes_frequencia_localidade=[]
+        self, api: Api, sexo="", nomes_frequencia=[], nomes_frequencia_localidade=[]
     ) -> None:
         self.api = api
+        self.sexo = sexo
         self.nomes_frequencia = nomes_frequencia
         self.nomes_frequencia_localidade = nomes_frequencia_localidade
 
-    def get(self, localidade="", sexo="") -> str:
+    def get(self, localidade="", decada="") -> str:
         result = ""
 
         if localidade:
             result = f"\nLocalidade: {localidade}\n"
 
-        resposta = self.api.get("ranking", params=params(localidade, sexo))
+        resposta = self.api.get("ranking", params=params(localidade, self.sexo, decada))
 
         if resposta:
             for res in resposta[0]["res"]:
@@ -54,21 +55,50 @@ class Ranking:
 
         return result
 
-    def geral(self, localidades=[], sexo="") -> str:
-        is_localidade = not localidades == None
-        conteudo = definicao_title("Ranking geral dos nomes", is_localidade, sexo)
+    def geral_localidades(self, localidades: list, decada="") -> str:
+        conteudo = ""
 
-        if localidades:
-            for localidade in localidades:
-                conteudo += self.get(localidade, sexo)
-        else:
-            conteudo += self.get(sexo=sexo)
+        for localidade in localidades:
+            conteudo += self.get(localidade, decada)
 
         return conteudo
 
-    def nomes(self, sexo="") -> str:
+    def geral_decadas(self, decadas: list, localidades=[]) -> list:
+        if localidades:
+            return [
+                {"decada": decada, "res": self.geral_localidades(localidades, decada)}
+                for decada in decadas
+            ]
+        return [
+            {"decada": decada, "res": self.get(decada=decada)} for decada in decadas
+        ]
+
+    def geral(self, localidades=[], decadas=[]) -> str:
+        is_localidade = not localidades == None
+        is_decada = not decadas == None
+
+        conteudo = definicao_title(
+            "Ranking geral dos nomes", is_localidade, is_decada, self.sexo
+        )
+
+        if decadas:
+            for elem in self.geral_decadas(decadas, localidades):
+                result = f"\nDécada: {elem['decada']}\n"
+                result += elem["res"]
+                conteudo += result
+        elif localidades:
+            conteudo += self.geral_localidades(localidades)
+        else:
+            conteudo += self.get()
+
+        return conteudo
+
+    def nomes(self, sexo="", decadas=[]) -> str:
         is_localidade = not len(self.nomes_frequencia_localidade) == 0
-        conteudo = definicao_title("Ranking dos nomes", is_localidade, sexo)
+        is_decada = not decadas == None
+
+        conteudo = definicao_title("Ranking dos nomes", is_localidade, is_decada, sexo)
+
         if self.nomes_frequencia_localidade:
             for localidade_nomes in self.nomes_frequencia_localidade:
                 localidade = localidade_nomes["localidade"]

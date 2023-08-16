@@ -1,4 +1,4 @@
-def params(localidade="", sexo="") -> dict | None:
+def params(localidade="", sexo="", decada="") -> dict | None:
     payload = {}
 
     if localidade:
@@ -6,6 +6,9 @@ def params(localidade="", sexo="") -> dict | None:
 
     if sexo:
         payload["sexo"] = sexo
+
+    if decada:
+        payload["decada"] = decada
 
     if payload:
         return payload
