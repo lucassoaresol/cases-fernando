@@ -4,13 +4,11 @@ from services import Api
 
 
 class Ranking:
-    def __init__(
-        self, api: Api, sexo="", nomes_frequencia=[], nomes_frequencia_localidade=[]
-    ) -> None:
+    def __init__(self, api: Api, is_localidade: bool, is_decada: bool, sexo="") -> None:
         self.api = api
+        self.is_localidade = is_localidade
+        self.is_decada = is_decada
         self.sexo = sexo
-        self.nomes_frequencia = nomes_frequencia
-        self.nomes_frequencia_localidade = nomes_frequencia_localidade
 
     def get(self, localidade="", decada="") -> str:
         result = ""
@@ -30,21 +28,27 @@ class Ranking:
 
         return result + "Nenhum ranking disponível"
 
-    def ordem_nome(self, localidade="") -> str:
+    def ordem_nome(self, nomes_frequencia: list, localidade="", decada="") -> str:
         result = ""
 
         if localidade:
-            frequencias = [
-                nome_list["frequencia"] for nome_list in self.nomes_frequencia
-            ]
+            frequencias = [nome_list["frequencia"] for nome_list in nomes_frequencia]
 
             result = f"\nLocalidade: {localidade}\n"
 
             if mean(frequencias) == 0:
                 return result + "Nenhum ranking disponível"
 
+        if decada:
+            frequencias = [nome_list["frequencia"] for nome_list in nomes_frequencia]
+
+            result = f"\nDécada: {decada}\n"
+
+            if mean(frequencias) == 0:
+                return result + "Nenhum ranking disponível"
+
         nomes_ordem = sorted(
-            self.nomes_frequencia, key=lambda i: i["frequencia"], reverse=True
+            nomes_frequencia, key=lambda i: i["frequencia"], reverse=True
         )
 
         for index, nome_list in enumerate(nomes_ordem):
@@ -54,6 +58,9 @@ class Ranking:
             result += f"{ranking}º - {nome}\n"
 
         return result
+
+    def title(self, title: str) -> str:
+        return definicao_title(title, self.is_localidade, self.is_decada, self.sexo)
 
     def geral_localidades(self, localidades: list, decada="") -> str:
         conteudo = ""
@@ -74,17 +81,11 @@ class Ranking:
         ]
 
     def geral(self, localidades=[], decadas=[]) -> str:
-        is_localidade = not localidades == None
-        is_decada = not decadas == None
-
-        conteudo = definicao_title(
-            "Ranking geral dos nomes", is_localidade, is_decada, self.sexo
-        )
+        conteudo = self.title("Ranking geral dos nomes")
 
         if decadas:
             for elem in self.geral_decadas(decadas, localidades):
-                result = f"\nDécada: {elem['decada']}\n"
-                result += elem["res"]
+                result = f"\nDécada: {elem['decada']}\n" + elem["res"]
                 conteudo += result
         elif localidades:
             conteudo += self.geral_localidades(localidades)
@@ -93,19 +94,44 @@ class Ranking:
 
         return conteudo
 
-    def nomes(self, sexo="", decadas=[]) -> str:
-        is_localidade = not len(self.nomes_frequencia_localidade) == 0
-        is_decada = not decadas == None
+    def nomes_localidades(self, nomes: list, decada="") -> str:
+        result = ""
 
-        conteudo = definicao_title("Ranking dos nomes", is_localidade, is_decada, sexo)
+        if decada:
+            result = f"\nDécada: {decada}\n"
 
-        if self.nomes_frequencia_localidade:
-            for localidade_nomes in self.nomes_frequencia_localidade:
-                localidade = localidade_nomes["localidade"]
-                self.nomes_frequencia = localidade_nomes["res"]
-                conteudo += self.ordem_nome(localidade)
+        for localidade_nomes in nomes:
+            result += self.ordem_nome(
+                localidade_nomes["res"], localidade_nomes["localidade"]
+            )
+
+        return result
+
+    def nomes_decadas(self, nomes: list) -> str:
+        result = ""
+
+        for decada_nomes in nomes:
+            if self.is_localidade:
+                result += self.nomes_localidades(
+                    decada_nomes["res"], decada_nomes["decada"]
+                )
+            else:
+                result += self.ordem_nome(
+                    decada_nomes["res"], decada=decada_nomes["decada"]
+                )
+
+        return result
+
+    def nomes(self, nomes: list) -> str:
+        conteudo = self.title("Ranking dos nomes")
+
+        if self.is_decada:
+            conteudo += self.nomes_decadas(nomes)
+
+        elif self.is_localidade:
+            conteudo += self.nomes_localidades(nomes)
 
         else:
-            conteudo += self.ordem_nome()
+            conteudo += self.ordem_nome(nomes)
 
         return conteudo
