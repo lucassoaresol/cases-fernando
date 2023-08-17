@@ -8,20 +8,15 @@ def main():
     nomes = args.nomes
     localidades = args.localidades
     sexo = args.sexo
+    is_localidade = not localidades == None
+    ranking = Ranking(is_localidade, sexo)
 
     if not nomes:
-        return print(Ranking().geral(localidades, sexo))
+        return print(ranking.geral(localidades))
 
-    if localidades:
-        return print(
-            Ranking(
-                nomes_frequencia_localidade=Item(nomes, sexo).frequencia_localidades(
-                    localidades
-                )
-            ).nomes(sexo)
-        )
+    nomes_frequencia = Item(nomes, sexo).frequencia(localidades)
 
-    return print(Ranking(Item(nomes, sexo).frequencia_nome()).nomes(sexo))
+    return print(ranking.nomes(nomes_frequencia))
 
 
 if __name__ == "__main__":

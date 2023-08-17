@@ -4,18 +4,18 @@ from scripts import params, definicao_title
 
 
 class Ranking:
-    def __init__(self, nomes_frequencia=[], nomes_frequencia_localidade=[]) -> None:
-        self.nomes_frequencia = nomes_frequencia
-        self.nomes_frequencia_localidade = nomes_frequencia_localidade
+    def __init__(self, is_localidade: bool, sexo="") -> None:
+        self.is_localidade = is_localidade
+        self.sexo = sexo
 
-    def get(self, localidade="", sexo="") -> str:
+    def get(self, localidade="") -> str:
         link = "https://servicodados.ibge.gov.br/api/v2/censos/nomes/ranking"
         result = ""
 
         if localidade:
             result = f"\nLocalidade: {localidade}\n"
 
-        resposta = requests.get(link, params=params(localidade, sexo)).json()
+        resposta = requests.get(link, params=params(localidade, self.sexo)).json()
 
         if resposta:
             for res in resposta[0]["res"]:
@@ -27,13 +27,11 @@ class Ranking:
 
         return result + "Nenhum ranking disponível"
 
-    def ordem_nome(self, localidade="") -> str:
+    def ordem_nome(self, nomes_frequencia: list, localidade="") -> str:
         result = ""
 
         if localidade:
-            frequencias = [
-                nome_list["frequencia"] for nome_list in self.nomes_frequencia
-            ]
+            frequencias = [nome_list["frequencia"] for nome_list in nomes_frequencia]
 
             result = f"\nLocalidade: {localidade}\n"
 
@@ -41,7 +39,7 @@ class Ranking:
                 return result + "Nenhum ranking disponível"
 
         nomes_ordem = sorted(
-            self.nomes_frequencia, key=lambda i: i["frequencia"], reverse=True
+            nomes_frequencia, key=lambda i: i["frequencia"], reverse=True
         )
 
         for index, nome_list in enumerate(nomes_ordem):
@@ -52,28 +50,29 @@ class Ranking:
 
         return result
 
-    def geral(self, localidades=[], sexo="") -> str:
-        is_localidade = not localidades == None
-        conteudo = definicao_title("Ranking geral dos nomes", is_localidade, sexo)
+    def title(self, title: str) -> str:
+        return definicao_title(title, self.is_localidade, self.sexo)
+
+    def geral(self, localidades=[]) -> str:
+        conteudo = self.title("Ranking geral dos nomes")
 
         if localidades:
             for localidade in localidades:
-                conteudo += self.get(localidade, sexo)
+                conteudo += self.get(localidade)
         else:
-            conteudo += self.get(sexo=sexo)
+            conteudo += self.get()
 
         return conteudo
 
-    def nomes(self, sexo="") -> str:
-        is_localidade = not len(self.nomes_frequencia_localidade) == 0
-        conteudo = definicao_title("Ranking dos nomes", is_localidade, sexo)
-        if self.nomes_frequencia_localidade:
-            for localidade_nomes in self.nomes_frequencia_localidade:
-                localidade = localidade_nomes["localidade"]
-                self.nomes_frequencia = localidade_nomes["res"]
-                conteudo += self.ordem_nome(localidade)
+    def nomes(self, nomes: list) -> str:
+        conteudo = self.title("Ranking dos nomes")
 
+        if self.is_localidade:
+            for localidade_nomes in nomes:
+                conteudo += self.ordem_nome(
+                    localidade_nomes["res"], localidade_nomes["localidade"]
+                )
         else:
-            conteudo += self.ordem_nome()
+            conteudo += self.ordem_nome(nomes)
 
         return conteudo
