@@ -1,10 +1,10 @@
-import argparse
+from argparse import ArgumentParser
 from itens import Item
 from rankings import Ranking
 
 
 def main():
-    parser = argparse.ArgumentParser(
+    parser = ArgumentParser(
         description="Obter um ranking de nomes brasileiros baseado na frequência dos mesmos através do último senso IBGE disponível"
     )
 
@@ -19,15 +19,12 @@ def main():
     args = parser.parse_args()
     nomes = args.nomes
 
-    nomes_frequencia = []
-
     if not nomes:
         return print(f"Ranking geral dos nomes:\n{Ranking().geral()}")
 
-    for nome in nomes:
-        nomes_frequencia.append(Item(nome).get_frequencia())
+    nomes_frequencia = Item(nomes).frequencia()
 
-    return print(f"Ranking dos nomes:\n{Ranking(nomes_frequencia).nomes()}")
+    return print(f"Ranking dos nomes:\n{Ranking().nomes(nomes_frequencia)}")
 
 
 if __name__ == "__main__":

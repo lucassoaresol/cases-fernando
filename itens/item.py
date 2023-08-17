@@ -2,11 +2,11 @@ import requests
 
 
 class Item:
-    def __init__(self, nome: str) -> None:
-        self.nome = nome.upper()
+    def __init__(self, nomes: list[str]) -> None:
+        self.nomes = nomes
 
-    def get_frequencia(self) -> dict:
-        link = f"https://servicodados.ibge.gov.br/api/v2/censos/nomes/{self.nome}"
+    def get_frequencia(self, nome: str) -> dict:
+        link = f"https://servicodados.ibge.gov.br/api/v2/censos/nomes/{nome}"
         resposta = requests.get(link).json()
         frequencia = 0
 
@@ -14,6 +14,9 @@ class Item:
             frequencia = resposta[0]["res"][-1]["frequencia"]
 
         return {
-            "nome": self.nome,
+            "nome": nome.upper(),
             "frequencia": frequencia,
         }
+
+    def frequencia(self) -> list:
+        return [self.get_frequencia(nome) for nome in self.nomes]

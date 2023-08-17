@@ -2,9 +2,6 @@ import requests
 
 
 class Ranking:
-    def __init__(self, nomes_frequencia=[]) -> None:
-        self.nomes_frequencia = nomes_frequencia
-
     def geral(self) -> str:
         link = "https://servicodados.ibge.gov.br/api/v2/censos/nomes/ranking"
         result = ""
@@ -19,11 +16,11 @@ class Ranking:
 
         return result
 
-    def nomes(self) -> str:
+    def nomes(self, nomes_frequencia: list) -> str:
         result = ""
 
         nomes_ordem = sorted(
-            self.nomes_frequencia, key=lambda i: i["frequencia"], reverse=True
+            nomes_frequencia, key=lambda i: i["frequencia"], reverse=True
         )
 
         for index, nome_list in enumerate(nomes_ordem):
