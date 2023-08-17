@@ -23,8 +23,10 @@ class Item:
     def frequencia_nome(self, localidade="") -> list:
         return [self.get_frequencia(nome, localidade) for nome in self.nomes]
 
-    def frequencia_localidades(self, localidades: list) -> list:
-        return [
-            {"localidade": localidade, "res": self.frequencia_nome(localidade)}
-            for localidade in localidades
-        ]
+    def frequencia(self, localidades=[]) -> list:
+        if localidades:
+            return [
+                {"localidade": localidade, "res": self.frequencia_nome(localidade)}
+                for localidade in localidades
+            ]
+        return self.frequencia_nome()

@@ -12,29 +12,19 @@ def main():
     sexo = args.sexo
     retry = args.retry
     timeout = args.timeout
+    is_localidade = not localidades == None
     api = Api(retry, timeout)
+    ranking = Ranking(api, is_localidade, sexo)
 
     if not nomes:
         try:
-            return print(Ranking(api).geral(localidades, sexo))
-        except MaxRetryError:
-            return print("Número de tentativas excedido")
-
-    if localidades:
-        try:
-            return print(
-                Ranking(
-                    api,
-                    nomes_frequencia_localidade=Item(
-                        api, nomes, sexo
-                    ).frequencia_localidades(localidades),
-                ).nomes(sexo)
-            )
+            return print(ranking.geral(localidades))
         except MaxRetryError:
             return print("Número de tentativas excedido")
 
     try:
-        return print(Ranking(api, Item(api, nomes, sexo).frequencia_nome()).nomes(sexo))
+        nomes_frequencia = Item(api, nomes, sexo).frequencia(localidades)
+        return print(ranking.nomes(nomes_frequencia))
     except MaxRetryError:
         return print("Número de tentativas excedido")
 
