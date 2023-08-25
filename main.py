@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 from itens import Item
 from rankings import Ranking
+from services import Ibge
 
 
 def main():
@@ -18,13 +19,22 @@ def main():
 
     args = parser.parse_args()
     nomes = args.nomes
+    title = "Ranking dos nomes:"
 
-    if not nomes:
-        return print(f"Ranking geral dos nomes:\n{Ranking().geral()}")
+    if nomes:
+        nomes_frequencia = []
 
-    nomes_frequencia = Item(nomes).frequencia()
+        for nome in nomes:
+            item = Item(nome, Ibge().busca_frequencia(nome))
+            nomes_frequencia.append({"nome": item.nome, "frequencia": item.frequencia})
 
-    return print(f"Ranking dos nomes:\n{Ranking().nomes(nomes_frequencia)}")
+        dados = Ranking().orderna_nomes(nomes_frequencia)
+
+    else:
+        title = "Ranking geral dos nomes:"
+        dados = Ibge().busca_ranking_geral()
+
+    return print(f"{title}\n{Ranking().gera_ranking(dados)}")
 
 
 if __name__ == "__main__":
