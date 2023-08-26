@@ -1,11 +1,16 @@
-def definicao_title(title: str, is_localidade: bool, sexo="") -> str:
+def definicao_titulo(is_nome: bool, is_localidade: bool, sexo="") -> str:
+    titulo = "Ranking geral dos nomes"
+
+    if is_nome:
+        titulo = "Ranking dos nomes"
+
     if sexo == "M":
-        title += " do sexo Masculino"
+        titulo += " do sexo Masculino"
 
     if sexo == "F":
-        title += " do sexo Feminino"
+        titulo += " do sexo Feminino"
 
     if is_localidade:
-        title += f" por localidade"
+        titulo += f" por localidade"
 
-    return f"{title}:\n"
+    return f"{titulo}:\n"
