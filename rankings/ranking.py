@@ -8,6 +8,9 @@ class Ranking:
             {"ranking": index + 1, "nome": nome_list["nome"]}
             for index, nome_list in enumerate(nomes_ordem)
         ]
+    
+    def gera_item_ranking(self, nomes:list) -> list:
+        ...
 
     def gera_ranking(self, dados: list) -> str:
         result = ""
