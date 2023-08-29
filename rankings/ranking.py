@@ -1,18 +1,17 @@
+from itens import Item
+from services import Ibge
+
+
 class Ranking:
-    def orderna_nomes(self, nomes_frequencia: list) -> list:
-        nomes_ordem = sorted(
-            nomes_frequencia, key=lambda i: i["frequencia"], reverse=True
-        )
+    def orderna_nomes(self, itens: list[Item]) -> list:
+        nomes_ordem = sorted(itens, key=lambda item: item.frequencia, reverse=True)
 
         return [
-            {"ranking": index + 1, "nome": nome_list["nome"]}
-            for index, nome_list in enumerate(nomes_ordem)
+            {"ranking": index + 1, "nome": item.nome}
+            for index, item in enumerate(nomes_ordem)
         ]
-    
-    def gera_item_ranking(self, nomes:list) -> list:
-        ...
 
-    def gera_ranking(self, dados: list) -> str:
+    def monta_ranking(self, dados: list) -> str:
         result = ""
 
         for res in dados:
@@ -22,3 +21,20 @@ class Ranking:
             result += f"{ranking}º - {nome}\n"
 
         return result
+
+    def gera_ranking(self, nomes=[]) -> str:
+        title = "Ranking dos nomes:"
+        if nomes:
+            itens = []
+
+            for nome in nomes:
+                item = Item(nome, Ibge().busca_frequencia(nome))
+                itens.append(item)
+
+            dados = self.orderna_nomes(itens)
+
+        else:
+            title = "Ranking geral dos nomes:"
+            dados = Ibge().busca_ranking_geral()
+
+        return f"{title}\n{self.monta_ranking(dados)}"
