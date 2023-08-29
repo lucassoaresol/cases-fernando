@@ -23,7 +23,7 @@ class Ranking:
         return result
 
     def gera_ranking(self, nomes=[]) -> str:
-        title = "Ranking dos nomes:"
+        titulo = "Ranking dos nomes:"
         if nomes:
             itens = []
 
@@ -34,7 +34,7 @@ class Ranking:
             dados = self.orderna_nomes(itens)
 
         else:
-            title = "Ranking geral dos nomes:"
+            titulo = "Ranking geral dos nomes:"
             dados = Ibge().busca_ranking_geral()
 
-        return f"{title}\n{self.monta_ranking(dados)}"
+        return f"{titulo}\n{self.monta_ranking(dados)}"
