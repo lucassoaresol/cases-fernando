@@ -16,7 +16,7 @@ class Dados:
     titulo = definicao_titulo(is_nome, is_localidade, sexo)
 
     @classmethod
-    def busca(cls, localidade="") -> list | None:
+    def busca(cls, localidade="") -> str:
         if cls.nomes:
             itens = []
 
@@ -24,9 +24,9 @@ class Dados:
                 item = Item(nome, cls.ibge.busca_frequencia(nome, localidade))
                 itens.append(item)
 
-            return cls.ranking.orderna_nomes(itens)
+            return cls.ranking.gera_ranking_nomes(itens)
 
-        return cls.ibge.busca_ranking_geral(localidade)
+        return cls.ranking.gera_ranking_geral(cls.ibge.busca_ranking_geral(localidade))
 
     @classmethod
     def define(cls) -> str:
@@ -35,9 +35,9 @@ class Dados:
         if cls.localidades:
             for localidade in cls.localidades:
                 conteudo += f"\nLocalidade: {localidade}\n"
-                conteudo += f"{cls.ranking.gera_ranking(cls.busca(localidade))}\n"
+                conteudo += f"{cls.busca(localidade)}\n"
             return conteudo
 
-        conteudo += cls.ranking.gera_ranking(cls.busca())
+        conteudo += cls.busca()
 
         return conteudo
