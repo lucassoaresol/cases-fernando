@@ -1,18 +1,17 @@
+from itens import Item
 from statistics import mean
 
 
 class Ranking:
-    def orderna_nomes(self, nomes_frequencia: list) -> list | None:
-        frequencias = [nome_list["frequencia"] for nome_list in nomes_frequencia]
+    def orderna_nomes(self, itens: list[Item]) -> list | None:
+        frequencias = [item.frequencia for item in itens]
 
         if mean(frequencias) != 0:
-            nomes_ordem = sorted(
-                nomes_frequencia, key=lambda i: i["frequencia"], reverse=True
-            )
+            nomes_ordem = sorted(itens, key=lambda item: item.frequencia, reverse=True)
 
             return [
-                {"ranking": index + 1, "nome": nome_list["nome"]}
-                for index, nome_list in enumerate(nomes_ordem)
+                {"ranking": index + 1, "nome": item.nome}
+                for index, item in enumerate(nomes_ordem)
             ]
 
     def gera_ranking(self, dados=[]) -> str:

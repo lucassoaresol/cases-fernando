@@ -18,15 +18,13 @@ class Dados:
     @classmethod
     def busca(cls, localidade="") -> list | None:
         if cls.nomes:
-            nomes_frequencia = []
+            itens = []
 
             for nome in cls.nomes:
                 item = Item(nome, cls.ibge.busca_frequencia(nome, localidade))
-                nomes_frequencia.append(
-                    {"nome": item.nome, "frequencia": item.frequencia}
-                )
+                itens.append(item)
 
-            return cls.ranking.orderna_nomes(nomes_frequencia)
+            return cls.ranking.orderna_nomes(itens)
 
         return cls.ibge.busca_ranking_geral(localidade)
 
