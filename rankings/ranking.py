@@ -1,4 +1,4 @@
-from itens import Item
+from itens.item import Item
 from statistics import mean
 
 
@@ -10,8 +10,9 @@ class Ranking:
             for res in dados:
                 ranking = res["ranking"]
                 nome = res["nome"]
+                frequencia = res["frequencia"]
 
-                result += f"{ranking}º - {nome}\n"
+                result += f"{ranking}º - {nome} - {frequencia}\n"
         else:
             result = "Nenhum ranking disponível"
 
@@ -28,7 +29,7 @@ class Ranking:
         ranking = 1
 
         for item in nomes_ordem:
-            result += f"{ranking}º - {item.nome}\n"
+            result += f"{ranking}º - {item.nome} - {item.frequencia}\n"
             ranking += 1
 
         return result
