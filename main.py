@@ -39,6 +39,7 @@ def arguments() -> ArgumentParser:
         "-r",
         "--retry",
         type=int,
+        default=3,
         help="Definir o número de tentativas",
     )
 
@@ -46,6 +47,7 @@ def arguments() -> ArgumentParser:
         "-t",
         "--timeout",
         type=int,
+        default=5,
         help="Definir o timeout",
     )
 

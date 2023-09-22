@@ -4,7 +4,7 @@ from urllib3.util import Retry
 
 
 class Api:
-    def __init__(self, retry=3, timeout=5) -> None:
+    def __init__(self, retry: int, timeout: int) -> None:
         self.retry = retry
         self.timeout = timeout
 
