@@ -1,35 +1,78 @@
 from itens.item import Item
-from statistics import mean
+from services.ibge import Ibge
 
 
 class Ranking:
-    def gera_ranking_geral(self, dados=[]) -> str:
-        result = ""
+    def __init__(self, ibge: Ibge, nomes=[], localidades=[], sexo="") -> None:
+        self.ibge = ibge
+        self.is_nome = not nomes == None
+        self.nomes = nomes
+        self.is_localidade = not localidades == None
+        self.localidades = localidades
+        self.sexo = sexo
+        self.itens: list[Item] = []
 
-        if dados:
-            for res in dados:
-                ranking = res["ranking"]
-                nome = res["nome"]
-                frequencia = res["frequencia"]
+    def definicao_titulo(self) -> str:
+        titulo = "Ranking geral dos nomes"
 
-                result += f"{ranking}º - {nome} - {frequencia}\n"
+        if self.is_nome:
+            titulo = "Ranking dos nomes"
+
+        if self.sexo == "M":
+            titulo += " do sexo Masculino"
+
+        if self.sexo == "F":
+            titulo += " do sexo Feminino"
+
+        if self.is_localidade:
+            titulo += f" por localidade"
+
+        return f"{titulo}:\n"
+
+    def adicionar_item(self, nome: str, frequencia=0, localidade=""):
+        self.itens.append(Item(self.ibge, nome, frequencia, self.sexo, localidade))
+
+    def ordernar_ranking(self):
+        return self.itens.sort(key=lambda item: item.frequencia, reverse=True)
+
+    def gera_ranking(self, localidade=""):
+        if self.is_nome:
+            for nome in self.nomes:
+                self.adicionar_item(nome, localidade=localidade)
+
         else:
-            result = "Nenhum ranking disponível"
+            dados = self.ibge.busca_ranking_geral(self.sexo, localidade)
+            if dados:
+                for res in dados:
+                    self.adicionar_item(res["nome"], res["frequencia"], localidade)
 
-        return result
+        self.ordernar_ranking()
 
-    def gera_ranking_nomes(self, itens: list[Item]) -> str:
-        frequencias = [item.frequencia for item in itens]
+    def exibir_ranking(self) -> str:
+        conteudo = self.definicao_titulo()
 
-        if mean(frequencias) == 0:
-            return "Nenhum ranking disponível"
+        if self.is_localidade:
+            for localidade in self.localidades:
+                conteudo += f"\nLocalidade: {localidade}\n"
+                self.gera_ranking(localidade)
+                ranking = 1
 
-        nomes_ordem = sorted(itens, key=lambda item: item.frequencia, reverse=True)
-        result = ""
+                if self.itens:
+                    for item in self.itens:
+                        conteudo += f"{ranking}º - {item}\n"
+                        ranking += 1
+                else:
+                    conteudo += "Nenhum ranking disponível"
+
+                self.itens = []
+
+            return conteudo
+
+        self.gera_ranking()
         ranking = 1
 
-        for item in nomes_ordem:
-            result += f"{ranking}º - {item.nome} - {item.frequencia}\n"
+        for item in self.itens:
+            conteudo += f"{ranking}º - {item}\n"
             ranking += 1
 
-        return result
+        return conteudo
