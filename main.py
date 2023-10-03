@@ -1,7 +1,6 @@
 from argparse import ArgumentParser
 from rankings.ranking import Ranking
 from services.ibge import Ibge
-from urllib3.exceptions import MaxRetryError
 
 
 def arguments() -> ArgumentParser:
@@ -59,12 +58,12 @@ def main():
     sexo = args.sexo
     retry = args.retry
     timeout = args.timeout
-    ibge = Ibge(retry, timeout)
 
-    try:
-        print(Ranking(ibge, nomes, localidades, sexo).exibir_ranking())
-    except MaxRetryError:
-        return print("Número de tentativas excedido")
+    ranking = Ranking(Ibge(retry, timeout))
+
+    ranking.define_titulo(nomes, sexo, localidades)
+    ranking.gera_ranking(nomes, sexo, localidades)
+    ranking.mostra_ranking()
 
 
 if __name__ == "__main__":

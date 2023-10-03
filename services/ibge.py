@@ -1,19 +1,16 @@
 from requests import Session
 from requests.adapters import HTTPAdapter
+from urllib3.exceptions import MaxRetryError
 from urllib3.util import Retry
 
 
 class Ibge:
     def __init__(self, retry: int, timeout: int) -> None:
-        prefix = "https://servicodados.ibge.gov.br/"
         retries = Retry(total=retry, raise_on_redirect=True)
         self.timeout = timeout
-        self.base_url = f"{prefix}api/v2/censos/nomes"
+        self.base_url = "https://servicodados.ibge.gov.br/api/"
         self.sessao = Session()
-        self.sessao.mount(
-            prefix,
-            HTTPAdapter(max_retries=retries),
-        )
+        self.sessao.mount("https://", HTTPAdapter(max_retries=retries))
 
     def params(self, sexo="", localidade="") -> dict | None:
         payload = {}
@@ -27,23 +24,19 @@ class Ibge:
         if payload:
             return payload
 
-    def busca_frequencia(self, nome: str, sexo="", localidade="") -> int:
-        link = f"{self.base_url}/{nome}"
-        resposta = self.sessao.get(
-            link, params=self.params(sexo, localidade), timeout=self.timeout
-        ).json()
-        frequencia = 0
+    def busca_ranking(self, nome="", sexo="", localidade=""):
+        link = f"{self.base_url}v2/censos/nomes/"
 
-        if resposta:
-            frequencia = resposta[0]["res"][-1]["frequencia"]
+        if nome:
+            link += nome
+        else:
+            link += "ranking"
 
-        return frequencia
-
-    def busca_ranking_geral(self, sexo="", localidade="") -> list | None:
-        link = f"{self.base_url}/ranking"
-        resposta = self.sessao.get(
-            link, params=self.params(sexo, localidade), timeout=self.timeout
-        ).json()
-
-        if resposta:
-            return resposta[0]["res"]
+        try:
+            return self.sessao.get(
+                link,
+                params=self.params(sexo, localidade),
+                timeout=self.timeout,
+            ).json()
+        except MaxRetryError:
+            print("Número de tentativas excedido")
