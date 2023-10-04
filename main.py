@@ -59,10 +59,10 @@ def main():
     retry = args.retry
     timeout = args.timeout
 
-    ranking = Ranking(Ibge(retry, timeout))
+    ranking = Ranking(Ibge(retry, timeout), nomes, sexo, localidades)
 
-    ranking.define_titulo(nomes, sexo, localidades)
-    ranking.gera_ranking(nomes, sexo, localidades)
+    ranking.define_titulo()
+    ranking.gera_ranking()
     ranking.mostra_ranking()
 
 
