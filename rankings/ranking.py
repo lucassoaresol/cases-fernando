@@ -3,103 +3,105 @@ from services.ibge import Ibge
 
 
 class Ranking:
-    def __init__(
-        self, ibge: Ibge, nomes=[], localidades=[], sexo="", decadas=[]
-    ) -> None:
+    def __init__(self, ibge: Ibge) -> None:
         self.ibge = ibge
-        self.is_nome = not nomes == None
-        self.nomes = nomes
-        self.is_localidade = not localidades == None
-        self.localidades = localidades
-        self.sexo = sexo
-        self.is_decada = not decadas == None
-        self.decadas = decadas
         self.itens: list[Item] = []
+        self.titulo = "Ranking geral dos nomes"
+        self.ranking = ""
 
-    def definicao_titulo(self) -> str:
-        titulo = "Ranking geral dos nomes"
+    def define_titulo(self, nomes=[], sexo="", localidades=[], decadas=[]):
+        if nomes:
+            self.titulo = "Ranking dos nomes"
 
-        if self.is_nome:
-            titulo = "Ranking dos nomes"
+        if sexo == "M":
+            self.titulo += " do sexo Masculino"
 
-        if self.sexo == "M":
-            titulo += " do sexo Masculino"
+        if sexo == "F":
+            self.titulo += " do sexo Feminino"
 
-        if self.sexo == "F":
-            titulo += " do sexo Feminino"
+        if localidades:
+            self.titulo += f" por localidade"
 
-        if self.is_localidade:
-            titulo += f" por localidade"
-
-        if self.is_decada:
-            if self.is_localidade:
-                titulo += " e década"
+        if decadas:
+            if localidades:
+                self.titulo += " e década"
             else:
-                titulo += " por década"
+                self.titulo += " por década"
 
-        return f"{titulo}:\n"
+        self.titulo += ":\n"
 
-    def adicionar_item(self, nome: str, frequencia=0, localidade="", decada=""):
-        self.itens.append(
-            Item(self.ibge, nome, frequencia, self.sexo, localidade, decada)
-        )
+    def adiciona_item(self, nome: str, frequencia: int):
+        self.itens.append(Item(nome, frequencia))
 
-    def ordernar_ranking(self):
+    def orderna_ranking(self):
         return self.itens.sort(key=lambda item: item.frequencia, reverse=True)
 
-    def gera_ranking(self, localidade="", decada=""):
-        if self.is_nome:
-            for nome in self.nomes:
-                self.adicionar_item(nome, localidade=localidade, decada=decada)
+    def busca_ranking(self, nomes=[], sexo="", localidade="", decada=""):
+        if nomes:
+            for nome in nomes:
+                resposta = self.ibge.busca_ranking(
+                    nome,
+                    sexo,
+                    localidade,
+                    decada,
+                )
+                frequencia = 0
+
+                if resposta:
+                    dados = resposta[0]
+                    ind = -1
+                    if decada:
+                        ind = int((decada - 1930) / 10)
+                    frequencia = dados["res"][ind]["frequencia"]
+
+                self.adiciona_item(nome, frequencia)
 
         else:
-            dados = self.ibge.busca_ranking_geral(self.sexo, localidade, decada)
-            if dados:
+            resposta = self.ibge.busca_ranking(
+                sexo=sexo, localidade=localidade, decada=decada
+            )
+
+            if resposta:
+                dados = resposta[0]["res"]
                 for res in dados:
-                    self.adicionar_item(
-                        res["nome"], res["frequencia"], localidade, decada
-                    )
+                    self.adiciona_item(res["nome"], res["frequencia"])
 
-        self.ordernar_ranking()
+        self.orderna_ranking()
 
-    def definir_ranking(self) -> str:
-        conteudo = ""
+    def define_ranking(self):
         ranking = 1
 
         if self.itens:
             for item in self.itens:
-                conteudo += f"{ranking}º - {item}\n"
+                self.ranking += f"{ranking}º - {item}\n"
                 ranking += 1
         else:
-            conteudo += "Nenhum ranking disponível"
+            self.ranking += "Nenhum ranking disponível"
 
         self.itens = []
 
-        return conteudo
-
-    def exibir_ranking(self) -> str:
-        conteudo = self.definicao_titulo()
-
-        if self.is_decada:
-            for decada in self.decadas:
-                conteudo += f"\nDécada: {decada}\n"
-                if self.is_localidade:
-                    for localidade in self.localidades:
-                        conteudo += f"\nLocalidade: {localidade}\n"
-                        self.gera_ranking(localidade, decada)
-                        conteudo += self.definir_ranking()
+    def gera_ranking(self, nomes=[], sexo="", localidades=[], decadas=[]):
+        if decadas:
+            for decada in decadas:
+                self.ranking += f"\nDécada: {decada}\n"
+                if localidades:
+                    for localidade in localidades:
+                        self.ranking += f"\nLocalidade: {localidade}\n"
+                        self.busca_ranking(nomes, sexo, localidade, decada)
+                        self.define_ranking()
                 else:
-                    self.gera_ranking(decada=decada)
-                    conteudo += self.definir_ranking()
+                    self.busca_ranking(nomes, sexo, decada=decada)
+                    self.define_ranking()
 
-        elif self.is_localidade:
-            for localidade in self.localidades:
-                conteudo += f"\nLocalidade: {localidade}\n"
-                self.gera_ranking(localidade)
-                conteudo += self.definir_ranking()
+        elif localidades:
+            for localidade in localidades:
+                self.ranking += f"\nLocalidade: {localidade}\n"
+                self.busca_ranking(nomes, sexo, localidade)
+                self.define_ranking()
 
         else:
-            self.gera_ranking()
-            conteudo += self.definir_ranking()
+            self.busca_ranking(nomes, sexo)
+            self.define_ranking()
 
-        return conteudo
+    def mostra_ranking(self):
+        print(self.titulo + self.ranking)

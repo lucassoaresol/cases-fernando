@@ -77,12 +77,12 @@ def main():
     retry = args.retry
     timeout = args.timeout
     decadas = args.decadas
-    ibge = Ibge(retry, timeout)
 
-    try:
-        print(Ranking(ibge, nomes, localidades, sexo, decadas).exibir_ranking())
-    except MaxRetryError:
-        return print("Número de tentativas excedido")
+    ranking = Ranking(Ibge(retry, timeout))
+
+    ranking.define_titulo(nomes, sexo, localidades, decadas)
+    ranking.gera_ranking(nomes, sexo, localidades, decadas)
+    ranking.mostra_ranking()
 
 
 if __name__ == "__main__":
