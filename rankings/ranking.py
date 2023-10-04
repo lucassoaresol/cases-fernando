@@ -3,68 +3,63 @@ from services.ibge import Ibge
 
 
 class Ranking:
-    def __init__(self, ibge: Ibge) -> None:
+    def __init__(
+        self, ibge: Ibge, nomes=[], sexo="", localidades=[], decadas=[]
+    ) -> None:
         self.ibge = ibge
+        self.nomes = nomes
+        self.sexo = sexo
+        self.localidades = localidades
+        self.decadas = decadas
         self.itens: list[Item] = []
         self.titulo = "Ranking geral dos nomes"
         self.ranking = ""
 
-    def define_titulo(self, nomes=[], sexo="", localidades=[], decadas=[]):
-        if nomes:
+    def define_titulo(self):
+        if self.nomes:
             self.titulo = "Ranking dos nomes"
 
-        if sexo == "M":
+        if self.sexo == "M":
             self.titulo += " do sexo Masculino"
 
-        if sexo == "F":
+        if self.sexo == "F":
             self.titulo += " do sexo Feminino"
 
-        if localidades:
+        if self.localidades:
             self.titulo += f" por localidade"
 
-        if decadas:
-            if localidades:
+        if self.decadas:
+            if self.localidades:
                 self.titulo += " e década"
             else:
                 self.titulo += " por década"
 
         self.titulo += ":\n"
 
-    def adiciona_item(self, nome: str, frequencia: int):
-        self.itens.append(Item(nome, frequencia))
+    def adiciona_item(self, nome: str, frequencia=0, localidade="", decada=""):
+        self.itens.append(
+            Item(self.ibge, nome, frequencia, self.sexo, localidade, decada)
+        )
 
     def orderna_ranking(self):
         return self.itens.sort(key=lambda item: item.frequencia, reverse=True)
 
-    def busca_ranking(self, nomes=[], sexo="", localidade="", decada=""):
-        if nomes:
-            for nome in nomes:
-                resposta = self.ibge.busca_ranking(
-                    nome,
-                    sexo,
-                    localidade,
-                    decada,
-                )
-                frequencia = 0
-
-                if resposta:
-                    dados = resposta[0]
-                    ind = -1
-                    if decada:
-                        ind = int((decada - 1930) / 10)
-                    frequencia = dados["res"][ind]["frequencia"]
-
-                self.adiciona_item(nome, frequencia)
+    def busca_ranking(self, localidade="", decada=""):
+        if self.nomes:
+            for nome in self.nomes:
+                self.adiciona_item(nome, localidade=localidade, decada=decada)
 
         else:
             resposta = self.ibge.busca_ranking(
-                sexo=sexo, localidade=localidade, decada=decada
+                sexo=self.sexo, localidade=localidade, decada=decada
             )
 
             if resposta:
                 dados = resposta[0]["res"]
                 for res in dados:
-                    self.adiciona_item(res["nome"], res["frequencia"])
+                    self.adiciona_item(
+                        res["nome"], res["frequencia"], localidade, decada
+                    )
 
         self.orderna_ranking()
 
@@ -80,27 +75,27 @@ class Ranking:
 
         self.itens = []
 
-    def gera_ranking(self, nomes=[], sexo="", localidades=[], decadas=[]):
-        if decadas:
-            for decada in decadas:
+    def gera_ranking(self):
+        if self.decadas:
+            for decada in self.decadas:
                 self.ranking += f"\nDécada: {decada}\n"
-                if localidades:
-                    for localidade in localidades:
+                if self.localidades:
+                    for localidade in self.localidades:
                         self.ranking += f"\nLocalidade: {localidade}\n"
-                        self.busca_ranking(nomes, sexo, localidade, decada)
+                        self.busca_ranking(localidade, decada)
                         self.define_ranking()
                 else:
-                    self.busca_ranking(nomes, sexo, decada=decada)
+                    self.busca_ranking(decada=decada)
                     self.define_ranking()
 
-        elif localidades:
-            for localidade in localidades:
+        elif self.localidades:
+            for localidade in self.localidades:
                 self.ranking += f"\nLocalidade: {localidade}\n"
-                self.busca_ranking(nomes, sexo, localidade)
+                self.busca_ranking(localidade)
                 self.define_ranking()
 
         else:
-            self.busca_ranking(nomes, sexo)
+            self.busca_ranking()
             self.define_ranking()
 
     def mostra_ranking(self):

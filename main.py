@@ -1,7 +1,6 @@
 from argparse import ArgumentParser
 from rankings.ranking import Ranking
 from services.ibge import Ibge
-from urllib3.exceptions import MaxRetryError
 
 
 def type_decada(decada: str) -> int:
@@ -78,10 +77,10 @@ def main():
     timeout = args.timeout
     decadas = args.decadas
 
-    ranking = Ranking(Ibge(retry, timeout))
+    ranking = Ranking(Ibge(retry, timeout), nomes, sexo, localidades, decadas)
 
-    ranking.define_titulo(nomes, sexo, localidades, decadas)
-    ranking.gera_ranking(nomes, sexo, localidades, decadas)
+    ranking.define_titulo()
+    ranking.gera_ranking()
     ranking.mostra_ranking()
 
 
