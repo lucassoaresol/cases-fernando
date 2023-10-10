@@ -3,14 +3,9 @@ from services.ibge import Ibge
 import unittest
 
 
-class Teste(unittest.TestCase):
+class TesteRanking(unittest.TestCase):
     def setUp(self):
         self.ibge = Ibge(3, 5)
-        self.ranking = Ranking(Ibge(3, 5))
-        self.localidades = ["11", "33"]
-        self.decadas = [1930, 1940]
-        self.nomes = ["lucas", "pedro", "carlos"]
-        self.nomes_sexo = ["lucas", "pedro", "carlos", "maria"]
 
     def teste_sem_nomes(self):
         ranking = Ranking(self.ibge)

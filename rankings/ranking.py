@@ -1,4 +1,6 @@
 from itens.item import Item
+from scripts.localidade import define_localidade
+from scripts.sexo import define_sexo
 from services.ibge import Ibge
 
 
@@ -8,7 +10,7 @@ class Ranking:
     ) -> None:
         self.ibge = ibge
         self.nomes = nomes
-        self.sexo = sexo
+        self.sexo = define_sexo(sexo)
         self.localidades = localidades
         self.decadas = decadas
         self.itens: list[Item] = []
@@ -45,6 +47,8 @@ class Ranking:
         return self.itens.sort(key=lambda item: item.frequencia, reverse=True)
 
     def busca_ranking(self, localidade="", decada=""):
+        localidade = define_localidade(self.ibge, localidade)
+
         if self.nomes:
             for nome in self.nomes:
                 self.adiciona_item(nome, localidade=localidade, decada=decada)

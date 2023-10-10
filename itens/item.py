@@ -1,3 +1,5 @@
+from scripts.localidade import define_localidade
+from scripts.sexo import define_sexo
 from services.ibge import Ibge
 
 
@@ -6,15 +8,15 @@ class Item:
         self,
         ibge: Ibge,
         nome: str,
-        frequencia: int,
+        frequencia=0,
         sexo="",
         localidade="",
         decada="",
     ) -> None:
         self.ibge = ibge
         self.nome = nome.upper()
-        self.sexo = sexo
-        self.localidade = localidade
+        self.sexo = define_sexo(sexo)
+        self.localidade = define_localidade(ibge, localidade)
         self.decada = decada
         self.frequencia = frequencia if frequencia != 0 else self.busca_frequencia()
 

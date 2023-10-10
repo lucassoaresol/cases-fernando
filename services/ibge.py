@@ -5,7 +5,7 @@ from urllib3.util import Retry
 
 
 class Ibge:
-    def __init__(self, retry: int, timeout: int) -> None:
+    def __init__(self, retry=3, timeout=5) -> None:
         retries = Retry(total=retry, raise_on_redirect=True)
         self.timeout = timeout
         self.base_url = "https://servicodados.ibge.gov.br/api/"
@@ -39,6 +39,20 @@ class Ibge:
             return self.sessao.get(
                 link,
                 params=self.params(sexo, localidade, decada),
+                timeout=self.timeout,
+            ).json()
+        except MaxRetryError:
+            print("Número de tentativas excedido")
+
+    def busca_localidade(self, localidade):
+        if isinstance(localidade, str):
+            localidade = localidade.upper()
+
+        link = f"{self.base_url}v1/localidades/estados/{localidade}"
+
+        try:
+            return self.sessao.get(
+                link,
                 timeout=self.timeout,
             ).json()
         except MaxRetryError:
