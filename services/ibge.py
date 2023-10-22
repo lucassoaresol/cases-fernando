@@ -6,9 +6,12 @@ from urllib3.util import Retry
 
 class Ibge:
     def __init__(self, retry=3, timeout=5) -> None:
-        retries = Retry(total=retry, raise_on_redirect=True)
+        self.retry = retry
         self.timeout = timeout
         self.base_url = "https://servicodados.ibge.gov.br/api/"
+
+    def config_sessao(self):
+        retries = Retry(total=self.retry, raise_on_redirect=True)
         self.sessao = Session()
         self.sessao.mount("https://", HTTPAdapter(max_retries=retries))
 
@@ -27,33 +30,31 @@ class Ibge:
         if payload:
             return payload
 
-    def busca_ranking(self, nome="", sexo="", localidade="", decada=""):
-        link = f"{self.base_url}v2/censos/nomes/"
-
-        if nome:
-            link += nome
-        else:
-            link += "ranking"
-
+    def busca(self, url, params=None):
+        self.config_sessao()
         try:
             return self.sessao.get(
-                link,
-                params=self.params(sexo, localidade, decada),
+                url,
+                params=params,
                 timeout=self.timeout,
             ).json()
         except MaxRetryError:
             print("Número de tentativas excedido")
+
+    def busca_ranking(self, nome="", sexo="", localidade="", decada=""):
+        url = f"{self.base_url}v2/censos/nomes/"
+
+        if nome:
+            url += nome
+        else:
+            url += "ranking"
+
+        return self.busca(url, self.params(sexo, localidade, decada))
 
     def busca_localidade(self, localidade):
         if isinstance(localidade, str):
             localidade = localidade.upper()
 
-        link = f"{self.base_url}v1/localidades/estados/{localidade}"
+        url = f"{self.base_url}v1/localidades/estados/{localidade}"
 
-        try:
-            return self.sessao.get(
-                link,
-                timeout=self.timeout,
-            ).json()
-        except MaxRetryError:
-            print("Número de tentativas excedido")
+        return self.busca(url)

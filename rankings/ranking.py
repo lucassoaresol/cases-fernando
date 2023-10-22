@@ -1,4 +1,5 @@
 from itens.item import Item
+from scripts.decada import define_decada
 from scripts.localidade import define_localidade
 from scripts.sexo import define_sexo
 from services.ibge import Ibge
@@ -13,7 +14,6 @@ class Ranking:
         self.sexo = define_sexo(sexo)
         self.localidades = localidades
         self.decadas = decadas
-        self.itens: list[Item] = []
         self.titulo = "Ranking geral dos nomes"
         self.ranking = ""
 
@@ -38,20 +38,22 @@ class Ranking:
 
         self.titulo += ":\n"
 
-    def adiciona_item(self, nome: str, frequencia=0, localidade="", decada=""):
-        self.itens.append(
-            Item(self.ibge, nome, frequencia, self.sexo, localidade, decada)
-        )
+    def instancia_item(self, nome: str, frequencia=0, localidade="", decada="") -> Item:
+        return Item(self.ibge, nome, frequencia, self.sexo, localidade, decada)
 
-    def orderna_ranking(self):
-        return self.itens.sort(key=lambda item: item.frequencia, reverse=True)
+    def orderna_ranking(self, ranking: list[Item]) -> list[Item]:
+        return sorted(ranking, key=lambda item: item.frequencia, reverse=True)
 
-    def busca_ranking(self, localidade="", decada=""):
+    def busca_ranking(self, localidade="", decada="") -> list[Item]:
         localidade = define_localidade(self.ibge, localidade)
+        decada = define_decada(decada)
+        itens = []
 
         if self.nomes:
             for nome in self.nomes:
-                self.adiciona_item(nome, localidade=localidade, decada=decada)
+                itens.append(
+                    self.instancia_item(nome, localidade=localidade, decada=decada)
+                )
 
         else:
             resposta = self.ibge.busca_ranking(
@@ -61,23 +63,21 @@ class Ranking:
             if resposta:
                 dados = resposta[0]["res"]
                 for res in dados:
-                    self.adiciona_item(
+                    self.instancia_item(
                         res["nome"], res["frequencia"], localidade, decada
                     )
 
-        self.orderna_ranking()
+        return itens
 
-    def define_ranking(self):
+    def define_ranking(self, itens: list[Item]):
         ranking = 1
 
-        if self.itens:
-            for item in self.itens:
+        if itens:
+            for item in itens:
                 self.ranking += f"{ranking}º - {item}\n"
                 ranking += 1
         else:
             self.ranking += "Nenhum ranking disponível"
-
-        self.itens = []
 
     def gera_ranking(self):
         if self.decadas:
@@ -86,21 +86,17 @@ class Ranking:
                 if self.localidades:
                     for localidade in self.localidades:
                         self.ranking += f"\nLocalidade: {localidade}\n"
-                        self.busca_ranking(localidade, decada)
-                        self.define_ranking()
+                        self.define_ranking(self.busca_ranking(localidade, decada))
                 else:
-                    self.busca_ranking(decada=decada)
-                    self.define_ranking()
+                    self.define_ranking(self.busca_ranking(decada=decada))
 
         elif self.localidades:
             for localidade in self.localidades:
                 self.ranking += f"\nLocalidade: {localidade}\n"
-                self.busca_ranking(localidade)
-                self.define_ranking()
+                self.define_ranking(self.busca_ranking(localidade))
 
         else:
-            self.busca_ranking()
-            self.define_ranking()
+            self.define_ranking(self.busca_ranking())
 
     def mostra_ranking(self):
         print(self.titulo + self.ranking)

@@ -1,39 +1,33 @@
 from itens.item import Item
-from testes.mock import TestMock
+from testes import constantes
 import unittest
 
 
 class TestItem(unittest.TestCase):
-    def setUp(self):
-        self.mock = TestMock()
-
     def teste_criar_item_com_valores_validos(self):
-        item = Item(self.mock.ibge, self.mock.nome, self.mock.frequencia)
-        self.assertEqual(item.nome, self.mock.nome.upper())
-        self.assertEqual(item.frequencia, self.mock.frequencia)
+        item = Item(constantes.ibge, "FERNANDO", 61551, "M", "RS", 1930)
+        self.assertEqual(item.nome, "FERNANDO")
+        self.assertEqual(item.frequencia, 61551)
 
     def teste_criar_item_com_sexo_invalido(self):
-        item = Item(self.mock.ibge, self.mock.nome, sexo="bk")
-        self.assertEqual(item.sexo, None)
+        with self.assertRaises(ValueError):
+            Item(constantes.ibge, "FERNANDO", sexo="bk")
 
-    def teste_criar_item_com_decada(self):
-        item = Item(
-            self.mock.ibge,
-            self.mock.nome,
-            0,
-            self.mock.sexo,
-            self.mock.localidade,
-            self.mock.decada,
-        )
-        self.assertEqual(item.decada, self.mock.decada)
+    def teste_criar_item_com_decada_invalida(self):
+        with self.assertRaises(ValueError):
+            Item(constantes.ibge, "FERNANDO", decada=1900)
+
+    def teste_criar_item_com_decada_invalida_texto(self):
+        with self.assertRaises(ValueError):
+            Item(constantes.ibge, "FERNANDO", decada="rsrs")
 
     def teste_criar_item_sem_frequencia(self):
-        item = Item(self.mock.ibge, self.mock.nome)
-        self.assertEqual(item.frequencia, 794118)
+        item = Item(constantes.ibge, "FERNANDO")
+        self.assertEqual(item.frequencia, 61551)
 
     def teste_criar_item_sem_frequencia_com_decada(self):
-        item = Item(self.mock.ibge, self.mock.nome, decada=self.mock.decada)
-        self.assertEqual(item.frequencia, 273960)
+        item = Item(constantes.ibge, "FERNANDO", decada=1930)
+        self.assertEqual(item.frequencia, 2204)
 
 
 if __name__ == "__main__":

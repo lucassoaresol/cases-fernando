@@ -1,7 +1,7 @@
 from services.ibge import Ibge
 
 
-def define_localidade(ibge: Ibge, localidade="") -> str:
+def define_localidade(ibge: Ibge, localidade=""):
     if not localidade or localidade == "BR":
         return "BR"
 

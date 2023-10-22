@@ -4,4 +4,6 @@ def define_sexo(sexo=""):
         if sexo == "M" or sexo == "F":
             return sexo
         else:
-            print(f"Sexo: {sexo} não é válido. \nDigite M (Masculino) ou F (Feminino).")
+            raise ValueError(
+                f"Sexo: {sexo} não é válido. \nDigite M (Masculino) ou F (Feminino)."
+            )
