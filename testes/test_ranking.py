@@ -178,6 +178,15 @@ class TesteRanking(unittest.TestCase):
 
         self.assertEqual(len(ranking.busca_ranking()), 1)
 
+    def teste_busca_ranking_sem_nomes(self):
+        ranking = Ranking(constantes.ibge_ranking_geral)
+
+        itens = []
+
+        ranking.adiciona_item(itens, constantes.ranking_geral)
+
+        self.assertEqual(len(ranking.busca_ranking()), len(itens))
+
     def teste_busca_ranking_com_decada_invalida(self):
         ranking = Ranking(constantes.ibge)
         with self.assertRaises(ValueError):
@@ -204,6 +213,26 @@ class TesteRanking(unittest.TestCase):
         self.assertEqual(
             ranking.ranking,
             "1º - FERNANDO - 61551\n",
+        )
+
+    def teste_gera_ranking_com_localidades(self):
+        ranking = Ranking(constantes.ibge, ["FERNANDO"], localidades=[43])
+        ranking.gera_ranking()
+
+        self.assertEqual(
+            ranking.ranking,
+            "\nLocalidade: 43\n1º - FERNANDO - 61551\n",
+        )
+
+    def teste_gera_ranking_com_localidades_e_decadas(self):
+        ranking = Ranking(
+            constantes.ibge, ["FERNANDO"], localidades=[43], decadas=[2010]
+        )
+        ranking.gera_ranking()
+
+        self.assertEqual(
+            ranking.ranking,
+            "\nDécada: 2010\n\nLocalidade: 43\n1º - FERNANDO - 61551\n",
         )
 
     def teste_gera_ranking_com_sexo_invalido(self):

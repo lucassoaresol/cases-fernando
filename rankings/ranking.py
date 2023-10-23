@@ -41,6 +41,22 @@ class Ranking:
     def instancia_item(self, nome: str, frequencia=0, localidade="", decada="") -> Item:
         return Item(self.ibge, nome, frequencia, self.sexo, localidade, decada)
 
+    def adiciona_item(
+        self, itens: list, resposta=None, nome="", localidade="", decada=""
+    ):
+        if resposta:
+            dados = resposta[0]["res"]
+            for res in dados:
+                itens.append(
+                    self.instancia_item(
+                        res["nome"], res["frequencia"], localidade, decada
+                    )
+                )
+        else:
+            itens.append(
+                self.instancia_item(nome, localidade=localidade, decada=decada)
+            )
+
     def orderna_ranking(self, ranking: list[Item]) -> list[Item]:
         return sorted(ranking, key=lambda item: item.frequencia, reverse=True)
 
@@ -51,8 +67,8 @@ class Ranking:
 
         if self.nomes:
             for nome in self.nomes:
-                itens.append(
-                    self.instancia_item(nome, localidade=localidade, decada=decada)
+                self.adiciona_item(
+                    itens, nome=nome, localidade=localidade, decada=decada
                 )
 
         else:
@@ -60,14 +76,7 @@ class Ranking:
                 sexo=self.sexo, localidade=localidade, decada=decada
             )
 
-            if resposta:
-                dados = resposta[0]["res"]
-                for res in dados:
-                    itens.append(
-                        self.instancia_item(
-                            res["nome"], res["frequencia"], localidade, decada
-                        )
-                    )
+            self.adiciona_item(itens, resposta, localidade=localidade, decada=decada)
 
         return itens
 
