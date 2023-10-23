@@ -63,8 +63,10 @@ class Ranking:
             if resposta:
                 dados = resposta[0]["res"]
                 for res in dados:
-                    self.instancia_item(
-                        res["nome"], res["frequencia"], localidade, decada
+                    itens.append(
+                        self.instancia_item(
+                            res["nome"], res["frequencia"], localidade, decada
+                        )
                     )
 
         return itens
@@ -86,17 +88,21 @@ class Ranking:
                 if self.localidades:
                     for localidade in self.localidades:
                         self.ranking += f"\nLocalidade: {localidade}\n"
-                        self.define_ranking(self.busca_ranking(localidade, decada))
+                        ranking = self.busca_ranking(localidade, decada)
+                        self.define_ranking(self.orderna_ranking(ranking))
                 else:
-                    self.define_ranking(self.busca_ranking(decada=decada))
+                    ranking = self.busca_ranking(decada=decada)
+                    self.define_ranking(self.orderna_ranking(ranking))
 
         elif self.localidades:
             for localidade in self.localidades:
                 self.ranking += f"\nLocalidade: {localidade}\n"
-                self.define_ranking(self.busca_ranking(localidade))
+                ranking = self.busca_ranking(localidade)
+                self.define_ranking(self.orderna_ranking(ranking))
 
         else:
-            self.define_ranking(self.busca_ranking())
+            ranking = self.busca_ranking()
+            self.define_ranking(self.orderna_ranking(ranking))
 
     def mostra_ranking(self):
         print(self.titulo + self.ranking)
