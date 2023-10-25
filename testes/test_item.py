@@ -23,7 +23,7 @@ class TestItem(unittest.TestCase):
 
     def teste_criar_item_sem_frequencia(self):
         item = Item(constantes.ibge, "FERNANDO")
-        self.assertEqual(item.frequencia, 61551)
+        self.assertEqual(item.frequencia, 556346)
 
     def teste_criar_item_sem_frequencia_com_decada(self):
         item = Item(constantes.ibge, "FERNANDO", decada=1930)

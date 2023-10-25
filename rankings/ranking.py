@@ -3,6 +3,8 @@ from scripts.decada import define_decada
 from scripts.localidade import define_localidade
 from scripts.sexo import define_sexo
 from services.ibge import Ibge
+import time
+import json
 
 
 class Ranking:
@@ -16,6 +18,7 @@ class Ranking:
         self.decadas = decadas
         self.titulo = "Ranking geral dos nomes"
         self.ranking = ""
+        self.ranking_json = []
 
     def define_titulo(self):
         if self.nomes:
@@ -82,13 +85,23 @@ class Ranking:
 
     def define_ranking(self, itens: list[Item]):
         ranking = 1
+        ranking_itens = []
 
         if itens:
             for item in itens:
+                ranking_itens.append(
+                    {
+                        "nome": item.nome,
+                        "frequencia": item.frequencia,
+                        "ranking": ranking,
+                    }
+                )
                 self.ranking += f"{ranking}º - {item}\n"
                 ranking += 1
         else:
             self.ranking += "Nenhum ranking disponível"
+
+        return ranking_itens
 
     def gera_ranking(self):
         if self.decadas:
@@ -98,20 +111,53 @@ class Ranking:
                     for localidade in self.localidades:
                         self.ranking += f"\nLocalidade: {localidade}\n"
                         ranking = self.busca_ranking(localidade, decada)
-                        self.define_ranking(self.orderna_ranking(ranking))
+                        self.ranking_json.append(
+                            {
+                                "localidade": localidade,
+                                "sexo": self.sexo,
+                                "decada": decada,
+                                "res": self.define_ranking(
+                                    self.orderna_ranking(ranking)
+                                ),
+                            }
+                        )
+
                 else:
                     ranking = self.busca_ranking(decada=decada)
-                    self.define_ranking(self.orderna_ranking(ranking))
+                    self.ranking_json.append(
+                        {
+                            "localidade": "BR",
+                            "sexo": self.sexo,
+                            "decada": decada,
+                            "res": self.define_ranking(self.orderna_ranking(ranking)),
+                        }
+                    )
 
         elif self.localidades:
             for localidade in self.localidades:
                 self.ranking += f"\nLocalidade: {localidade}\n"
                 ranking = self.busca_ranking(localidade)
-                self.define_ranking(self.orderna_ranking(ranking))
+                self.ranking_json.append(
+                    {
+                        "localidade": localidade,
+                        "sexo": self.sexo,
+                        "res": self.define_ranking(self.orderna_ranking(ranking)),
+                    }
+                )
 
         else:
             ranking = self.busca_ranking()
-            self.define_ranking(self.orderna_ranking(ranking))
+            self.ranking_json.append(
+                {
+                    "localidade": "BR",
+                    "sexo": self.sexo,
+                    "res": self.define_ranking(self.orderna_ranking(ranking)),
+                }
+            )
 
     def mostra_ranking(self):
         print(self.titulo + self.ranking)
+
+    def exporta_json_ranking(self):
+        with open(f"saidas/{round(time.time() * 1000)}.json", "w") as json_file:
+            json.dump(self.ranking_json, json_file, indent=2)

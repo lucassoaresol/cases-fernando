@@ -203,7 +203,7 @@ class TesteRanking(unittest.TestCase):
 
         self.assertEqual(
             ranking.ranking,
-            "1º - FERNANDO - 61551\n",
+            "1º - FERNANDO - 556346\n",
         )
 
     def teste_gera_ranking(self):
@@ -212,7 +212,22 @@ class TesteRanking(unittest.TestCase):
 
         self.assertEqual(
             ranking.ranking,
-            "1º - FERNANDO - 61551\n",
+            "1º - FERNANDO - 556346\n",
+        )
+
+    def teste_gera_ranking_json(self):
+        ranking = Ranking(constantes.ibge, ["FERNANDO"])
+        ranking.gera_ranking()
+
+        self.assertListEqual(
+            ranking.ranking_json,
+            [
+                {
+                    "localidade": "BR",
+                    "sexo": ranking.sexo,
+                    "res": ranking.define_ranking([constantes.fernandoItem]),
+                }
+            ],
         )
 
     def teste_gera_ranking_com_localidades(self):
@@ -221,7 +236,7 @@ class TesteRanking(unittest.TestCase):
 
         self.assertEqual(
             ranking.ranking,
-            "\nLocalidade: 43\n1º - FERNANDO - 61551\n",
+            "\nLocalidade: 43\n1º - FERNANDO - 556346\n",
         )
 
     def teste_gera_ranking_com_localidades_e_decadas(self):

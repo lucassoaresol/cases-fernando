@@ -17,6 +17,7 @@ def main():
     ranking.define_titulo()
     ranking.gera_ranking()
     ranking.mostra_ranking()
+    ranking.exporta_json_ranking()
 
 
 if __name__ == "__main__":

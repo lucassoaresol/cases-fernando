@@ -28,10 +28,13 @@ class Item:
 
         if resposta:
             dados = resposta[0]
-            ind = -1
             if self.decada:
                 ind = int((self.decada - 1930) / 10)
-            frequencia = dados["res"][ind]["frequencia"]
+                frequencia = dados["res"][ind]["frequencia"]
+            else:
+                frequencia = 0
+                for valor in dados["res"]:
+                    frequencia += valor["frequencia"]
 
         return frequencia
 

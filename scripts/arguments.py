@@ -1,4 +1,14 @@
 from argparse import ArgumentParser
+from services.ibge import Ibge
+
+
+def type_localidade(localidade: str):
+    resposta = Ibge().busca_localidade(localidade)
+
+    if resposta:
+        return resposta["id"]
+    else:
+        raise ValueError
 
 
 def type_decada(decada: str) -> int:
@@ -27,6 +37,7 @@ def arguments() -> ArgumentParser:
         "-l",
         "--localidades",
         nargs="+",
+        type=type_localidade,
         help="Digite as localidades que deseja obter o ranking",
     )
 

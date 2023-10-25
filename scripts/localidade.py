@@ -10,4 +10,4 @@ def define_localidade(ibge: Ibge, localidade=""):
     if resposta:
         return resposta["id"]
     else:
-        print(f"Localidade: {localidade} não encontrada.")
+        raise ValueError(f"Localidade: {localidade} não é válida.")
