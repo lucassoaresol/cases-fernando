@@ -19,22 +19,26 @@ class Item:
         self.sexo = define_sexo(sexo)
         self.localidade = define_localidade(ibge, localidade)
         self.decada = define_decada(decada)
-        self.frequencia = frequencia if frequencia != 0 else self.busca_frequencia()
+        self.frequencia = self.busca_frequencia(frequencia)
 
-    def busca_frequencia(self) -> int:
-        resposta = self.ibge.busca_ranking(
-            self.nome, self.sexo, self.localidade, self.decada
-        )
+    def busca_frequencia(self, frequencia: int) -> int:
+        if frequencia == 0:
+            resposta = self.ibge.busca_ranking(
+                self.nome, self.sexo, self.localidade, self.decada
+            )
 
-        if resposta:
-            dados = resposta[0]
-            if self.decada:
-                ind = int((self.decada - 1930) / 10)
-                frequencia = dados["res"][ind]["frequencia"]
-            else:
-                frequencia = 0
+            if resposta:
+                dados = resposta[0]
+
+                if self.decada == 1930:
+                    return dados["res"][0]["frequencia"]
+
                 for valor in dados["res"]:
-                    frequencia += valor["frequencia"]
+                    if self.decada:
+                        if valor["periodo"].split("[")[1].endswith(str(self.decada)):
+                            frequencia = valor["frequencia"]
+                    else:
+                        frequencia += valor["frequencia"]
 
         return frequencia
 
