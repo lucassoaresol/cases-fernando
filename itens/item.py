@@ -1,6 +1,3 @@
-from scripts.decada import define_decada
-from scripts.localidade import define_localidade
-from scripts.sexo import define_sexo
 from services.ibge import Ibge
 
 
@@ -16,10 +13,41 @@ class Item:
     ) -> None:
         self.ibge = ibge
         self.nome = nome.upper()
-        self.sexo = define_sexo(sexo)
-        self.localidade = define_localidade(ibge, localidade)
-        self.decada = define_decada(decada)
+        self.sexo = self.define_sexo(sexo)
+        self.localidade = self.define_localidade(localidade)
+        self.decada = self.define_decada(decada)
         self.frequencia = self.busca_frequencia(frequencia)
+
+    def define_sexo(self, sexo=""):
+        if sexo:
+            sexo = sexo.upper()
+            if sexo == "M" or sexo == "F":
+                return sexo
+            else:
+                raise ValueError(
+                    f"Sexo: {sexo} não é válido. \nDigite M (Masculino) ou F (Feminino)."
+                )
+
+    def define_localidade(self, localidade=""):
+        if not localidade or localidade == "BR":
+            return "BR"
+
+        resposta = self.ibge.busca_localidade(localidade)
+
+        if resposta:
+            return resposta["id"]
+        else:
+            raise ValueError(f"Localidade: {localidade} não é válida.")
+
+    def define_decada(self, decada=0):
+        if decada:
+            if isinstance(decada, int):
+                if decada < 1930 or decada > 2010 or decada % 10 != 0:
+                    raise ValueError(f"Década: {decada} não é válida.")
+                else:
+                    return decada
+            else:
+                raise ValueError(f"Década: {decada} não é válida.")
 
     def busca_frequencia(self, frequencia: int) -> int:
         if frequencia == 0:
@@ -41,6 +69,15 @@ class Item:
                         frequencia += valor["frequencia"]
 
         return frequencia
+
+    def define_json(self):
+        return {
+            "nome": self.nome,
+            "sexo": self.sexo,
+            "localidade": self.localidade,
+            "decada": self.decada,
+            "frequencia": self.frequencia,
+        }
 
     def __str__(self) -> str:
         return f"{self.nome} - {self.frequencia}"

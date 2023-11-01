@@ -29,6 +29,19 @@ class TestItem(unittest.TestCase):
         item = Item(constantes.ibge, "FERNANDO", decada=1930)
         self.assertEqual(item.frequencia, 2204)
 
+    def teste_item_define_json(self):
+        item = Item(constantes.ibge, "FERNANDO", sexo="M", decada=1930)
+        self.assertDictEqual(
+            item.define_json(),
+            {
+                "nome": "FERNANDO",
+                "sexo": "M",
+                "localidade": "BR",
+                "decada": 1930,
+                "frequencia": 2204,
+            },
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -14,7 +14,6 @@ def main():
 
     ranking = Ranking(Ibge(retry, timeout), nomes, sexo, localidades, decadas)
 
-    ranking.define_titulo()
     ranking.gera_ranking()
     ranking.mostra_ranking()
     ranking.exporta_json_ranking()
