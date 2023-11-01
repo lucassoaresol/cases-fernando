@@ -3,6 +3,7 @@ from scripts.decada import define_decada
 from scripts.localidade import define_localidade
 from scripts.sexo import define_sexo
 from services.ibge import Ibge
+from services.redis import Redis
 import time
 import json
 
@@ -11,6 +12,7 @@ class Ranking:
     def __init__(
         self, ibge: Ibge, nomes=[], sexo="", localidades=[], decadas=[]
     ) -> None:
+        self.redis = Redis(ibge)
         self.ibge = ibge
         self.nomes = nomes
         self.sexo = define_sexo(sexo)
@@ -48,14 +50,13 @@ class Ranking:
         self, itens: list, resposta=None, nome="", localidade="", decada=""
     ):
         if resposta:
-            dados = resposta[0]["res"]
-            for res in dados:
+            for res in resposta:
                 itens.append(
                     self.instancia_item(
                         res["nome"], res["frequencia"], localidade, decada
                     )
                 )
-        else:
+        elif nome:
             itens.append(
                 self.instancia_item(nome, localidade=localidade, decada=decada)
             )
@@ -75,7 +76,7 @@ class Ranking:
                 )
 
         else:
-            resposta = self.ibge.busca_ranking(
+            resposta = self.redis.ranking(
                 sexo=self.sexo, localidade=localidade, decada=decada
             )
 
