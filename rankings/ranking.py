@@ -1,5 +1,6 @@
 from itens.item import Item
 from services.ibge import Ibge
+from services.redis import Redis
 import time
 import json
 
@@ -9,6 +10,7 @@ class Ranking:
         self, ibge: Ibge, nomes=[], sexo="", localidades=[], decadas=[]
     ) -> None:
         self.ibge = ibge
+        self.redis = Redis(ibge)
         self.nomes = nomes
         self.sexo = self.define_sexo(sexo)
         self.localidades = localidades
@@ -31,7 +33,7 @@ class Ranking:
         if not localidade or localidade == "BR":
             return "BR"
 
-        resposta = self.ibge.busca_localidade(localidade)
+        resposta = self.redis.localidade(localidade)
 
         if resposta:
             return resposta["id"]
@@ -90,16 +92,15 @@ class Ranking:
                 itens_ranking.append(item)
 
         else:
-            resposta = self.ibge.busca_ranking(
+            resposta = self.redis.ranking(
                 sexo=self.sexo, localidade=localidade, decada=decada
             )
 
             if resposta:
-                dados = resposta[0]["res"]
-                for res in dados:
+                for dados in resposta:
                     item = self.instancia_item(
-                        res["nome"],
-                        res["frequencia"],
+                        dados["nome"],
+                        dados["frequencia"],
                         localidade,
                         decada,
                     )

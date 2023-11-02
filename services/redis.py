@@ -7,7 +7,7 @@ class Redis:
         self.ibge = ibge
         self.r = redis.Redis(host="localhost", port=6379, decode_responses=True)
 
-    def key(self, base: str, sexo="", localidade="", decada="") -> str:
+    def define_key(self, base: str, sexo="", localidade="", decada=""):
         if localidade:
             base += f"-{localidade}"
 
@@ -19,27 +19,57 @@ class Redis:
 
         return base
 
-    def busca_ranking(
-        self, nome: str = "", sexo: str = "", localidade: str = "", decada: str = ""
-    ):
-        return self.ibge.busca_ranking(nome, sexo, localidade, decada)
-
     def ranking(self, sexo="", localidade="", decada=""):
-        name = self.key("ranking", sexo, localidade, decada)
-        # resposta = self.r.json().get(name, "$")
+        name = self.define_key("ranking", sexo, localidade, decada)
+        resposta = self.r.json().get(name, "$")
 
-        # if resposta:
-        #     return resposta["res"]
+        if resposta:
+            return resposta[0]
 
-        resposta = self.busca_ranking(sexo=sexo, localidade=localidade, decada=decada)
+        resposta = self.ibge.busca_ranking(
+            sexo=sexo, localidade=localidade, decada=decada
+        )
 
         if resposta:
             dados = resposta[0]["res"]
             self.r.json().set(
                 name,
                 "$",
-                {
-                    "res": dados,
-                },
+                dados,
             )
             return dados
+
+    def frequencia(self, nome: str, sexo="", localidade="", decada=""):
+        name = self.define_key(nome, sexo, localidade, decada)
+        resposta = self.r.json().get(name, "$")
+
+        if resposta:
+            return resposta[0]
+
+        resposta = self.ibge.busca_ranking(nome, sexo, localidade, decada)
+
+        if resposta:
+            dados = resposta[0]
+            self.r.json().set(
+                name,
+                "$",
+                dados["res"],
+            )
+            return dados["res"]
+
+    def localidade(self, localidade: str):
+        name = self.define_key("localidade", localidade=localidade)
+        resposta = self.r.json().get(name, "$")
+
+        if resposta:
+            return resposta[0]
+
+        resposta = self.ibge.busca_localidade(localidade)
+
+        if resposta:
+            self.r.json().set(
+                name,
+                "$",
+                resposta,
+            )
+            return resposta
