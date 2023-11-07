@@ -30,13 +30,13 @@ class TestItem(unittest.TestCase):
         self.assertEqual(item.frequencia, 2204)
 
     def teste_item_define_json(self):
-        item = Item(constantes.ibge, "FERNANDO", sexo="M", decada=1930)
+        item = Item(constantes.ibge, "FERNANDO", sexo="M", localidade="RS", decada=1930)
         self.assertDictEqual(
             item.define_json(),
             {
                 "nome": "FERNANDO",
                 "sexo": "M",
-                "localidade": "BR",
+                "localidade": "RS",
                 "decada": 1930,
                 "frequencia": 2204,
             },

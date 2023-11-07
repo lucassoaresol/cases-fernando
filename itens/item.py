@@ -15,7 +15,7 @@ class Item:
         self.redis = Redis(ibge)
         self.nome = nome.upper()
         self.sexo = self.define_sexo(sexo)
-        self.localidade = self.define_localidade(localidade)
+        self.localidade = localidade
         self.decada = self.define_decada(decada)
         self.frequencia = self.busca_frequencia(frequencia)
 
@@ -28,17 +28,6 @@ class Item:
                 raise ValueError(
                     f"Sexo: {sexo} não é válido. \nDigite M (Masculino) ou F (Feminino)."
                 )
-
-    def define_localidade(self, localidade=""):
-        if not localidade or localidade == "BR":
-            return "BR"
-
-        resposta = self.redis.localidade(localidade)
-
-        if resposta:
-            return resposta["id"]
-        else:
-            raise ValueError(f"Localidade: {localidade} não é válida.")
 
     def define_decada(self, decada=0):
         if decada:
