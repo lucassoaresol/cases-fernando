@@ -1,75 +1,34 @@
 import redis
-from services.ibge import Ibge
+import json
 
 
 class Redis:
-    def __init__(self, ibge: Ibge) -> None:
-        self.ibge = ibge
-        self.r = redis.Redis(host="localhost", port=6379, decode_responses=True)
+    def __init__(self, host="localhost", port=6379, db=0):
+        try:
+            self.redis = redis.Redis(host=host, port=port, db=db)
+        except redis.ConnectionError:
+            print(f"Não foi possível conectar ao servidor Redis em {host}:{port}")
 
-    def define_key(self, base: str, sexo="", localidade="", decada=""):
-        if localidade:
-            base += f"-{localidade}"
+    def busca(self, key):
+        try:
+            value = self.redis.get(key)
+            if value:
+                value = value.decode("utf-8")
+                return json.loads(value)
+            else:
+                return None
+        except redis.RedisError as e:
+            print(f"Erro ao obter valor da chave {key} no Redis: {e}")
 
-        if sexo:
-            base += f"-{sexo}"
+    def define(self, key, value, expiration=600):
+        try:
+            value = json.dumps(value)
+            self.redis.setex(key, expiration, value)
+        except (redis.RedisError, TypeError) as e:
+            print(f"Erro ao definir chave {key} no Redis: {e}")
 
-        if decada:
-            base += f"-{decada}"
-
-        return base
-
-    def ranking(self, sexo="", localidade="", decada=""):
-        name = self.define_key("ranking", sexo, localidade, decada)
-        resposta = self.r.json().get(name, "$")
-
-        if resposta:
-            return resposta[0]
-
-        resposta = self.ibge.busca_ranking(
-            sexo=sexo, localidade=localidade, decada=decada
-        )
-
-        if resposta:
-            dados = resposta[0]["res"]
-            self.r.json().set(
-                name,
-                "$",
-                dados,
-            )
-            return dados
-
-    def frequencia(self, nome: str, sexo="", localidade="", decada=""):
-        name = self.define_key(nome, sexo, localidade, decada)
-        resposta = self.r.json().get(name, "$")
-
-        if resposta:
-            return resposta[0]
-
-        resposta = self.ibge.busca_ranking(nome, sexo, localidade, decada)
-
-        if resposta:
-            dados = resposta[0]
-            self.r.json().set(
-                name,
-                "$",
-                dados["res"],
-            )
-            return dados["res"]
-
-    def localidade(self, localidade: str):
-        name = self.define_key("localidade", localidade=localidade)
-        resposta = self.r.json().get(name, "$")
-
-        if resposta:
-            return resposta[0]
-
-        resposta = self.ibge.busca_localidade(localidade)
-
-        if resposta:
-            self.r.json().set(
-                name,
-                "$",
-                resposta,
-            )
-            return resposta
+    def verificar_conexao(self):
+        try:
+            return self.redis.ping()
+        except (redis.exceptions.ConnectionError, ConnectionRefusedError):
+            return False

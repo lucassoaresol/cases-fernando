@@ -1,5 +1,4 @@
 from services.ibge import Ibge
-from services.redis import Redis
 
 
 class Item:
@@ -12,7 +11,7 @@ class Item:
         localidade="",
         decada="",
     ) -> None:
-        self.redis = Redis(ibge)
+        self.ibge = ibge
         self.nome = nome.upper()
         self.sexo = self.define_sexo(sexo)
         self.localidade = localidade
@@ -41,15 +40,17 @@ class Item:
 
     def busca_frequencia(self, frequencia: int) -> int:
         if frequencia == 0:
-            resposta = self.redis.frequencia(
+            resposta = self.ibge.busca_ranking(
                 self.nome, self.sexo, self.localidade, self.decada
             )
 
             if resposta:
-                if self.decada == 1930:
-                    return resposta[0]["frequencia"]
+                dados = resposta[0]
 
-                for valor in resposta:
+                if self.decada == 1930:
+                    return dados["res"][0]["frequencia"]
+
+                for valor in dados["res"]:
                     if self.decada:
                         if valor["periodo"].split("[")[1].endswith(str(self.decada)):
                             frequencia = valor["frequencia"]

@@ -2,6 +2,7 @@ from requests import Session
 from requests.adapters import HTTPAdapter
 from urllib3.exceptions import MaxRetryError
 from urllib3.util import Retry
+from services.redis import Redis
 
 
 class Ibge:
@@ -9,6 +10,7 @@ class Ibge:
         self.retry = retry
         self.timeout = timeout
         self.base_url = "https://servicodados.ibge.gov.br/api/"
+        self.cache = Redis()
 
     def config_sessao(self):
         retries = Retry(total=self.retry, raise_on_redirect=True)
@@ -41,6 +43,9 @@ class Ibge:
         except MaxRetryError:
             print("Número de tentativas excedido")
 
+    def busca_cache(self, cache_key):
+        return self.cache.busca(cache_key)
+
     def busca_ranking(self, nome="", sexo="", localidade="", decada=""):
         url = f"{self.base_url}v2/censos/nomes/"
 
@@ -49,7 +54,17 @@ class Ibge:
         else:
             url += "ranking"
 
-        return self.busca(url, self.params(sexo, localidade, decada))
+        if self.cache.verificar_conexao():
+            cache_key = f"{nome}:{localidade}:{sexo}:{decada}"
+            resposta = self.busca_cache(cache_key)
+            if resposta:
+                return resposta
+            else:
+                resposta = self.busca(url, self.params(sexo, localidade, decada))
+                self.cache.define(cache_key, resposta)
+                return resposta
+        else:
+            return self.busca(url, self.params(sexo, localidade, decada))
 
     def busca_localidade(self, localidade):
         if isinstance(localidade, str):
