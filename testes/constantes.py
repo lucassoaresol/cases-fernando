@@ -164,5 +164,8 @@ ibge.busca_ranking.return_value = nome_sem_parametros
 ibge_ranking_geral = Mock(Ibge)
 ibge_ranking_geral.busca_ranking.return_value = ranking_geral
 
+ibge_none = Mock(Ibge)
+ibge_none.busca_localidade.return_value = None
+
 fernandoItem = Item(ibge, "fernando", 556346)
 mariaItem = Item(ibge, "maria", 1111301)

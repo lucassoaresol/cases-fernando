@@ -142,5 +142,9 @@ class Ranking:
 
     def exporta_json_ranking(self):
         itens_json = [item.define_json() for item in self.itens]
-        with open(f"saidas/{round(time.time() * 1000)}.json", "w") as json_file:
+        nome_arquivo = f"saidas/{round(time.time() * 1000)}.json"
+
+        with open(nome_arquivo, "w") as json_file:
             json.dump(itens_json, json_file, indent=2)
+
+        return nome_arquivo

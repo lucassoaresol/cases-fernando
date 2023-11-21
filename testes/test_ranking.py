@@ -1,6 +1,8 @@
 from itens.item import Item
 from rankings.ranking import Ranking
 from testes import constantes
+import json
+import os
 import unittest
 
 
@@ -69,12 +71,12 @@ class TesteRanking(unittest.TestCase):
         )
 
     def teste_titulo_sem_nomes_com_sexo_e_decadas(self):
-        ranking = Ranking(constantes.ibge, sexo="M", decadas=[1930])
+        ranking = Ranking(constantes.ibge, sexo="F", decadas=[1930])
         ranking.define_titulo()
 
         self.assertEqual(
             ranking.titulo,
-            "Ranking geral dos nomes do sexo Masculino por década:\n",
+            "Ranking geral dos nomes do sexo Feminino por década:\n",
         )
 
     def teste_titulo_sem_nomes_com_decadas(self):
@@ -183,6 +185,11 @@ class TesteRanking(unittest.TestCase):
 
         self.assertEqual(len(ranking.busca_ranking()), len(ranking.itens))
 
+    def teste_busca_ranking_com_localidade_invalida(self):
+        ranking = Ranking(constantes.ibge_none)
+        with self.assertRaises(ValueError):
+            ranking.busca_ranking(localidade="rss")
+
     def teste_busca_ranking_com_decada_invalida(self):
         ranking = Ranking(constantes.ibge)
         with self.assertRaises(ValueError):
@@ -200,6 +207,15 @@ class TesteRanking(unittest.TestCase):
         self.assertEqual(
             ranking.ranking,
             "1º - FERNANDO - 556346\n",
+        )
+
+    def teste_define_ranking_none(self):
+        ranking = Ranking(constantes.ibge)
+        ranking.define_ranking([])
+
+        self.assertEqual(
+            ranking.ranking,
+            "Nenhum ranking disponível",
         )
 
     def teste_gera_ranking(self):
@@ -253,6 +269,24 @@ class TesteRanking(unittest.TestCase):
             ranking.mostra_ranking(),
             print(ranking.titulo + ranking.ranking),
         )
+
+    def teste_exporta_json_ranking(self):
+        ranking = Ranking(constantes.ibge, ["FERNANDO"], "M", decadas=[1990])
+        ranking.gera_ranking()
+        nome_arquivo = ranking.exporta_json_ranking()
+
+        self.assertTrue(os.path.exists(nome_arquivo))
+
+        with open(nome_arquivo, "r") as arquivo:
+            dados = json.load(arquivo)
+            self.assertEqual(len(dados), 1)
+            self.assertEqual(dados[0]["nome"], "FERNANDO")
+            self.assertEqual(dados[0]["sexo"], "M")
+            self.assertEqual(dados[0]["localidade"], "BR")
+            self.assertEqual(dados[0]["decada"], 1990)
+            self.assertEqual(dados[0]["frequencia"], 169079)
+
+        os.remove(nome_arquivo)
 
 
 if __name__ == "__main__":
