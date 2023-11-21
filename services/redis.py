@@ -24,6 +24,7 @@ class Redis:
         try:
             value = json.dumps(value)
             self.redis.setex(key, expiration, value)
+            return key, value
         except (redis.RedisError, TypeError) as e:
             print(f"Erro ao definir chave {key} no Redis: {e}")
 
