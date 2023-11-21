@@ -1,6 +1,6 @@
 from itens.item import Item
+from services.cache import Cache
 from services.ibge import Ibge
-from services.redis import Redis
 from unittest.mock import Mock
 
 
@@ -171,8 +171,8 @@ ibge_none.busca_localidade.return_value = None
 fernandoItem = Item(ibge, "fernando", 556346)
 mariaItem = Item(ibge, "maria", 1111301)
 
-cache = Mock(Redis)
+cache = Mock(Cache)
 cache.busca.return_value = ranking_geral
 
-cache_none = Mock(Redis)
+cache_none = Mock(Cache)
 cache_none.busca.return_value = None

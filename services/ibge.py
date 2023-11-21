@@ -1,12 +1,12 @@
 from requests import Session
 from requests.adapters import HTTPAdapter
+from services.cache import Cache
 from urllib3.exceptions import MaxRetryError
 from urllib3.util import Retry
-from services.redis import Redis
 
 
 class Ibge:
-    def __init__(self, retry=3, timeout=5, cache=Redis, cache_ativo=False) -> None:
+    def __init__(self, retry=3, timeout=5, cache=Cache, cache_ativo=False) -> None:
         self.retry = retry
         self.timeout = timeout
         self.base_url = "https://servicodados.ibge.gov.br/api/"

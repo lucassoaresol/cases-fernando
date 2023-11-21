@@ -1,7 +1,7 @@
 from rankings.ranking import Ranking
 from scripts.arguments import arguments
+from services.cache import Cache
 from services.ibge import Ibge
-from services.redis import Redis
 
 
 def main():
@@ -12,7 +12,7 @@ def main():
     retry = args.retry
     timeout = args.timeout
     decadas = args.decadas
-    cache = Redis()
+    cache = Cache()
 
     ranking = Ranking(
         Ibge(retry, timeout, cache, cache.verificar_conexao()),

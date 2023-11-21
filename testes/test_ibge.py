@@ -177,7 +177,7 @@ class TestIbge(unittest.TestCase):
 
         self.assertEqual(response, constantes.siglas_estados)
 
-    @patch("services.ibge.Redis.busca")
+    @patch("services.ibge.Cache.busca")
     def teste_busca_cache(self, mock_busca):
         mock_busca.return_value = constantes.ranking_geral
 
@@ -185,7 +185,7 @@ class TestIbge(unittest.TestCase):
 
         self.assertEqual(ibge.busca_cache("key"), mock_busca("key"))
 
-    @patch("services.ibge.Redis.busca")
+    @patch("services.ibge.Cache.busca")
     def teste_busca_ranking_cache(self, mock_busca):
         mock_busca.return_value = constantes.ranking_geral
 
@@ -193,7 +193,7 @@ class TestIbge(unittest.TestCase):
 
         self.assertEqual(ibge.busca_ranking(), mock_busca(""))
 
-    @patch("services.ibge.Redis.busca")
+    @patch("services.ibge.Cache.busca")
     def teste_busca_ranking_cache_define(self, mock_busca):
         mock_busca.return_value = constantes.ranking_geral
 

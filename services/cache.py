@@ -1,8 +1,8 @@
-import redis
 import json
+import redis
 
 
-class Redis:
+class Cache:
     def __init__(self, host="localhost", port=6379, db=0):
         try:
             self.redis = redis.Redis(host=host, port=port, db=db)
