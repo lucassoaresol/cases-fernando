@@ -6,11 +6,12 @@ from services.redis import Redis
 
 
 class Ibge:
-    def __init__(self, retry=3, timeout=5) -> None:
+    def __init__(self, retry=3, timeout=5, cache=Redis, cache_ativo=False) -> None:
         self.retry = retry
         self.timeout = timeout
         self.base_url = "https://servicodados.ibge.gov.br/api/"
-        self.cache = Redis()
+        self.cache = cache
+        self.cache_ativo = cache_ativo
 
     def config_sessao(self):
         retries = Retry(total=self.retry, raise_on_redirect=True)
@@ -54,7 +55,7 @@ class Ibge:
         else:
             url += "ranking"
 
-        if self.cache.verificar_conexao():
+        if self.cache_ativo:
             cache_key = f"{nome}:{localidade}:{sexo}:{decada}"
             resposta = self.busca_cache(cache_key)
             if resposta:
