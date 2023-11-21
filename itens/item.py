@@ -6,7 +6,7 @@ class Item:
         self,
         ibge: Ibge,
         nome: str,
-        frequencia=0,
+        frequencia=None,
         sexo="",
         localidade="",
         decada="",
@@ -38,11 +38,12 @@ class Item:
             else:
                 raise ValueError(f"Década: {decada} não é válida.")
 
-    def busca_frequencia(self, frequencia: int) -> int:
-        if frequencia == 0:
+    def busca_frequencia(self, frequencia) -> int:
+        if frequencia == None:
             resposta = self.ibge.busca_ranking(
                 self.nome, self.sexo, self.localidade, self.decada
             )
+            frequencia = 0
 
             if resposta:
                 dados = resposta[0]

@@ -69,7 +69,7 @@ class Ranking:
 
         self.titulo += ":\n"
 
-    def instancia_item(self, nome: str, frequencia=0, localidade="", decada=""):
+    def instancia_item(self, nome: str, frequencia=None, localidade="", decada=""):
         return Item(self.ibge, nome, frequencia, self.sexo, localidade, decada)
 
     def adiciona_item(self, item: Item):
