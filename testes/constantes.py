@@ -1,9 +1,3 @@
-from itens.item import Item
-from services.cache import Cache
-from services.ibge import Ibge
-from unittest.mock import Mock
-
-
 nome_sem_parametros = [
     {
         "nome": "FERNANDO",
@@ -156,23 +150,3 @@ ranking_com_decada = [
 ]
 
 ranking_com_decada_invalida = []
-
-
-ibge = Mock(Ibge)
-ibge.busca_localidade.return_value = siglas_estados
-ibge.busca_ranking.return_value = nome_sem_parametros
-
-ibge_ranking_geral = Mock(Ibge)
-ibge_ranking_geral.busca_ranking.return_value = ranking_geral
-
-ibge_none = Mock(Ibge)
-ibge_none.busca_localidade.return_value = None
-
-fernandoItem = Item(ibge, "fernando", 556346)
-mariaItem = Item(ibge, "maria", 1111301)
-
-cache = Mock(Cache)
-cache.busca.return_value = ranking_geral
-
-cache_none = Mock(Cache)
-cache_none.busca.return_value = None

@@ -1,6 +1,7 @@
+from services.cache import Cache
 from services.ibge import Ibge
 from testes import constantes
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, Mock
 import unittest
 
 
@@ -181,7 +182,10 @@ class TestIbge(unittest.TestCase):
     def teste_busca_cache(self, mock_busca):
         mock_busca.return_value = constantes.ranking_geral
 
-        ibge = Ibge(cache=constantes.cache)
+        cache = Mock(Cache)
+        cache.busca.return_value = constantes.ranking_geral
+
+        ibge = Ibge(cache=cache)
 
         self.assertEqual(ibge.busca_cache("key"), mock_busca("key"))
 
@@ -189,7 +193,10 @@ class TestIbge(unittest.TestCase):
     def teste_busca_ranking_cache(self, mock_busca):
         mock_busca.return_value = constantes.ranking_geral
 
-        ibge = Ibge(cache=constantes.cache, cache_ativo=True)
+        cache = Mock(Cache)
+        cache.busca.return_value = constantes.ranking_geral
+
+        ibge = Ibge(cache=cache, cache_ativo=True)
 
         self.assertEqual(ibge.busca_ranking(), mock_busca(""))
 
@@ -197,7 +204,10 @@ class TestIbge(unittest.TestCase):
     def teste_busca_ranking_cache_define(self, mock_busca):
         mock_busca.return_value = constantes.ranking_geral
 
-        ibge = Ibge(cache=constantes.cache_none, cache_ativo=True)
+        cache = Mock(Cache)
+        cache.busca.return_value = None
+
+        ibge = Ibge(cache=cache, cache_ativo=True)
 
         self.assertEqual(ibge.busca_ranking(), constantes.ranking_geral)
 
