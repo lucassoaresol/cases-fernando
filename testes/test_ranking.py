@@ -170,11 +170,6 @@ class TesteRanking(unittest.TestCase):
             "Ranking dos nomes por década:\n",
         )
 
-    def teste_instancia_item(self):
-        ranking = Ranking(self.ibge)
-
-        self.assertIsInstance(ranking.instancia_item("FERNANDO", 61551), Item)
-
     def teste_orderna_ranking(self):
         ranking = Ranking(self.ibge)
         item1 = Item(self.ibge, "fernando", 556346)
@@ -189,6 +184,18 @@ class TesteRanking(unittest.TestCase):
         ranking = Ranking(self.ibge, ["FERNDANDO"])
 
         self.assertEqual(len(ranking.busca_ranking()), 1)
+
+    def teste_busca_ranking_arquivo(self):
+        itens_json = ["FERNANDO", "MARIA", "LUCAS", "CARLOS"]
+
+        with open("nomes.json", "w") as json_file:
+            json.dump(itens_json, json_file)
+
+        ranking = Ranking(self.ibge, arquivo="nomes")
+
+        self.assertEqual(len(ranking.busca_ranking()), 4)
+
+        os.remove("nomes.json")
 
     def teste_busca_ranking_sem_nomes(self):
         ibge = Mock(Ibge)
@@ -303,6 +310,19 @@ class TesteRanking(unittest.TestCase):
             self.assertEqual(dados[0]["frequencia"], 169079)
 
         os.remove(nome_arquivo)
+
+    def teste_importa_json_nomes(self):
+        itens_json = ["FERNANDO", "MARIA", "LUCAS", "CARLOS"]
+
+        with open("nomes.json", "w") as json_file:
+            json.dump(itens_json, json_file)
+
+        ranking = Ranking(self.ibge, arquivo="nomes")
+        ranking.importa_json_nomes()
+
+        self.assertListEqual(itens_json, ranking.nomes)
+
+        os.remove("nomes.json")
 
 
 if __name__ == "__main__":

@@ -73,4 +73,11 @@ def arguments() -> ArgumentParser:
         help="Digite as décadas que deseja obter o ranking",
     )
 
+    parser.add_argument(
+        "-a",
+        "--arquivo",
+        type=str,
+        help="Digite o nome do arquivo de nomes, sem o .json",
+    )
+
     return parser

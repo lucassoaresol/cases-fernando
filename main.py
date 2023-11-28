@@ -12,6 +12,7 @@ def main():
     retry = args.retry
     timeout = args.timeout
     decadas = args.decadas
+    arquivo = args.arquivo
     cache = Cache()
 
     ranking = Ranking(
@@ -20,6 +21,7 @@ def main():
         sexo,
         localidades,
         decadas,
+        arquivo,
     )
 
     ranking.gera_ranking()

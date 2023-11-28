@@ -6,13 +6,14 @@ import json
 
 class Ranking:
     def __init__(
-        self, ibge: Ibge, nomes=[], sexo="", localidades=[], decadas=[]
+        self, ibge: Ibge, nomes=[], sexo="", localidades=[], decadas=[], arquivo=""
     ) -> None:
         self.ibge = ibge
         self.nomes = nomes
         self.sexo = self.define_sexo(sexo)
         self.localidades = localidades
         self.decadas = decadas
+        self.arquivo = arquivo
         self.itens: list[Item] = []
         self.titulo = "Ranking geral dos nomes"
         self.ranking = ""
@@ -69,8 +70,10 @@ class Ranking:
 
         self.titulo += ":\n"
 
-    def instancia_item(self, nome: str, frequencia=None, localidade="", decada=""):
-        return Item(self.ibge, nome, frequencia, self.sexo, localidade, decada)
+    def instancia_item(self, nome: str, frequencia=None):
+        return Item(
+            self.ibge, nome, frequencia, self.sexo, self.localidade, self.decada
+        )
 
     def adiciona_item(self, item: Item):
         self.itens.append(item)
@@ -79,19 +82,22 @@ class Ranking:
         return sorted(ranking, key=lambda item: item.frequencia, reverse=True)
 
     def busca_ranking(self, localidade="", decada=""):
-        localidade = self.define_localidade(localidade)
-        decada = self.define_decada(decada)
+        self.localidade = self.define_localidade(localidade)
+        self.decada = self.define_decada(decada)
         itens_ranking = []
+
+        if self.arquivo:
+            self.importa_json_nomes()
 
         if self.nomes:
             for nome in self.nomes:
-                item = self.instancia_item(nome, localidade=localidade, decada=decada)
+                item = self.instancia_item(nome)
                 self.adiciona_item(item)
                 itens_ranking.append(item)
 
         else:
             resposta = self.ibge.busca_ranking(
-                sexo=self.sexo, localidade=localidade, decada=decada
+                sexo=self.sexo, localidade=self.localidade, decada=self.decada
             )
 
             if resposta:
@@ -100,8 +106,6 @@ class Ranking:
                     item = self.instancia_item(
                         res["nome"],
                         res["frequencia"],
-                        localidade,
-                        decada,
                     )
                     self.adiciona_item(item)
                     itens_ranking.append(item)
@@ -148,3 +152,11 @@ class Ranking:
             json.dump(itens_json, json_file, indent=2)
 
         return nome_arquivo
+
+    def importa_json_nomes(self):
+        nome_arquivo = f"{self.arquivo}.json"
+
+        with open(nome_arquivo, "r") as arquivo:
+            dados = json.load(arquivo)
+
+        self.nomes = dados
