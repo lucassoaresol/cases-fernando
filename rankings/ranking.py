@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 from itens.item import Item
 from services.ibge import Ibge
 import time
@@ -90,10 +91,11 @@ class Ranking:
             self.importa_json_nomes()
 
         if self.nomes:
-            for nome in self.nomes:
-                item = self.instancia_item(nome)
-                self.adiciona_item(item)
-                itens_ranking.append(item)
+            max_threads = 10
+            with ThreadPoolExecutor(max_threads) as executor:
+                for nome in self.nomes:
+                    itens_ranking.append(executor.submit(self.instancia_item, nome))
+            itens_ranking = [r.result() for r in itens_ranking if r is not None]
 
         else:
             resposta = self.ibge.busca_ranking(
