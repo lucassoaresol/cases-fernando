@@ -1,5 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 from itens.item import Item
+from multiprocessing import cpu_count
 from services.ibge import Ibge
 import time
 import json
@@ -90,13 +91,8 @@ class Ranking:
             self.importa_json_nomes()
 
         if self.nomes:
-            max_threads = 10
-            with ThreadPoolExecutor(max_threads) as executor:
-                for nome in self.nomes:
-                    itens_ranking.append(executor.submit(self.instancia_item, nome))
-            itens_ranking = [
-                item.result() for item in itens_ranking if item is not None
-            ]
+            with ThreadPoolExecutor(cpu_count()) as executor:
+                itens_ranking = executor.map(self.instancia_item, self.nomes)
 
         else:
             resposta = self.ibge.busca_ranking(

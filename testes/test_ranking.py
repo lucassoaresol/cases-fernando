@@ -183,7 +183,9 @@ class TesteRanking(unittest.TestCase):
     def teste_busca_ranking(self):
         ranking = Ranking(self.ibge, ["FERNDANDO"])
 
-        self.assertEqual(len(ranking.busca_ranking()), 1)
+        nomes = [item.nome for item in ranking.busca_ranking()]
+
+        self.assertListEqual(["FERNDANDO"], nomes)
 
     def teste_busca_ranking_arquivo(self):
         itens_json = ["FERNANDO", "MARIA", "LUCAS", "CARLOS"]
@@ -193,7 +195,9 @@ class TesteRanking(unittest.TestCase):
 
         ranking = Ranking(self.ibge, arquivo="nomes")
 
-        self.assertEqual(len(ranking.busca_ranking()), 4)
+        nomes = [item.nome for item in ranking.busca_ranking()]
+
+        self.assertListEqual(itens_json, nomes)
 
         os.remove("nomes.json")
 
