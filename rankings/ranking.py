@@ -72,12 +72,11 @@ class Ranking:
         self.titulo += ":\n"
 
     def instancia_item(self, nome: str, frequencia=None):
-        return Item(
+        item = Item(
             self.ibge, nome, frequencia, self.sexo, self.localidade, self.decada
         )
-
-    def adiciona_item(self, item: Item):
         self.itens.append(item)
+        return item
 
     def orderna_ranking(self, ranking: list[Item]):
         return sorted(ranking, key=lambda item: item.frequencia, reverse=True)
@@ -109,7 +108,6 @@ class Ranking:
                         res["nome"],
                         res["frequencia"],
                     )
-                    self.adiciona_item(item)
                     itens_ranking.append(item)
 
         return itens_ranking
