@@ -94,7 +94,9 @@ class Ranking:
             with ThreadPoolExecutor(max_threads) as executor:
                 for nome in self.nomes:
                     itens_ranking.append(executor.submit(self.instancia_item, nome))
-            itens_ranking = [r.result() for r in itens_ranking if r is not None]
+            itens_ranking = [
+                item.result() for item in itens_ranking if item is not None
+            ]
 
         else:
             resposta = self.ibge.busca_ranking(
@@ -104,11 +106,12 @@ class Ranking:
             if resposta:
                 dados = resposta[0]["res"]
                 for res in dados:
-                    item = self.instancia_item(
-                        res["nome"],
-                        res["frequencia"],
+                    itens_ranking.append(
+                        self.instancia_item(
+                            res["nome"],
+                            res["frequencia"],
+                        )
                     )
-                    itens_ranking.append(item)
 
         return itens_ranking
 
