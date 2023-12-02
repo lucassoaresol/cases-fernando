@@ -1,5 +1,3 @@
-from concurrent.futures import ThreadPoolExecutor
-from multiprocessing import cpu_count
 from rankings.ranking import Ranking
 from scripts.arguments import arguments
 from services.cache import Cache
@@ -26,10 +24,8 @@ def main():
         arquivo,
     )
 
-    with ThreadPoolExecutor(cpu_count()) as executor:
-        ranking_gerado = executor.submit(ranking.gera_ranking)
-        ranking.mostra_ranking(ranking_gerado.result())
-
+    ranking.gera_ranking()
+    ranking.mostra_ranking()
     ranking.exporta_json_ranking()
 
 

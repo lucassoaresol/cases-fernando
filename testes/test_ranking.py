@@ -290,9 +290,10 @@ class TesteRanking(unittest.TestCase):
 
     def teste_mostra_ranking(self):
         ranking = Ranking(self.ibge, ["FERNANDO"])
+        ranking.gera_ranking()
 
         self.assertEqual(
-            ranking.mostra_ranking(ranking.gera_ranking()),
+            ranking.mostra_ranking(),
             print(ranking.titulo + ranking.ranking),
         )
 

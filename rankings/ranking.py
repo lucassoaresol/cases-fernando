@@ -121,32 +121,37 @@ class Ranking:
 
     def gera_ranking(self):
         if self.decadas:
-            for decada in self.decadas:
-                self.ranking += f"\nDécada: {decada}\n"
-                if self.localidades:
-                    for localidade in self.localidades:
-                        self.ranking += f"\nLocalidade: {localidade}\n"
-                        self.define_ranking(self.busca_ranking(localidade, decada))
+            with ThreadPoolExecutor(cpu_count()) as executor:
+                for decada in self.decadas:
+                    self.ranking += f"\nDécada: {decada}\n"
+                    if self.localidades:
+                        for localidade in self.localidades:
+                            self.ranking += f"\nLocalidade: {localidade}\n"
+                            itens = executor.submit(
+                                self.busca_ranking, localidade, decada
+                            )
+                            self.define_ranking(itens.result())
 
-                else:
-                    self.define_ranking(self.busca_ranking(decada=decada))
+                    else:
+                        itens = executor.submit(self.busca_ranking, None, decada)
+                        self.define_ranking(itens.result())
 
         elif self.localidades:
-            for localidade in self.localidades:
-                self.ranking += f"\nLocalidade: {localidade}\n"
-                self.define_ranking(self.busca_ranking(localidade))
+            with ThreadPoolExecutor(cpu_count()) as executor:
+                for localidade in self.localidades:
+                    self.ranking += f"\nLocalidade: {localidade}\n"
+                    itens = executor.submit(self.busca_ranking, localidade)
+                    self.define_ranking(itens.result())
 
         else:
             self.define_ranking(self.busca_ranking())
 
-        return self.ranking
-
-    def mostra_ranking(self, ranking: str):
+    def mostra_ranking(self):
         self.define_titulo()
-        print(self.titulo + ranking)
+        print(self.titulo + self.ranking)
 
     def exporta_json_ranking(self):
-        itens_json = [item.define_json() for item in self.itens]
+        itens_json = [item.define_json() for item in self.orderna_ranking(self.itens)]
         nome_arquivo = f"saidas/{round(time.time() * 1000)}.json"
 
         with open(nome_arquivo, "w") as json_file:
