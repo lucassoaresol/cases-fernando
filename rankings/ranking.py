@@ -139,9 +139,11 @@ class Ranking:
         else:
             self.define_ranking(self.busca_ranking())
 
-    def mostra_ranking(self):
+        return self.ranking
+
+    def mostra_ranking(self, ranking: str):
         self.define_titulo()
-        print(self.titulo + self.ranking)
+        print(self.titulo + ranking)
 
     def exporta_json_ranking(self):
         itens_json = [item.define_json() for item in self.itens]
