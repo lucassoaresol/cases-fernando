@@ -18,7 +18,6 @@ class Ranking:
         self.arquivo = arquivo
         self.itens: list[Item] = []
         self.titulo = self.define_titulo()
-        self.ranking = ""
 
     def define_sexo(self, sexo=""):
         if sexo:
@@ -145,45 +144,56 @@ class Ranking:
                 combinacoes.append((None, None, decada))
 
         self.multi_ranking(combinacoes)
-        self.monta_ranking()
 
-    def monta_ranking(self):
+    def monta_ranking(self, itens: list[Item]):
+        ranking = ""
+
         if self.decadas:
             for decada in self.decadas:
-                self.ranking += f"\nDécada: {decada}\n"
+                ranking += f"\nDécada: {decada}\n"
                 if self.localidades:
                     for localidade in self.localidades:
-                        self.ranking += f"\nLocalidade: {localidade}\n"
-                        itens = [
+                        ranking += f"\nLocalidade: {localidade}\n"
+                        itens_ranking = [
                             item
-                            for item in self.itens
+                            for item in itens
                             if item.localidade == localidade and item.decada == decada
                         ]
-                        self.define_ranking(itens)
+                        ranking += self.define_ranking(itens_ranking)
 
                 else:
-                    itens = [item for item in self.itens if item.decada == decada]
-                    self.define_ranking(itens)
+                    itens_ranking = [item for item in itens if item.decada == decada]
+                    ranking += self.define_ranking(itens_ranking)
 
         elif self.localidades:
             for localidade in self.localidades:
-                self.ranking += f"\nLocalidade: {localidade}\n"
-                itens = [item for item in self.itens if item.localidade == localidade]
-                self.define_ranking(itens)
+                ranking += f"\nLocalidade: {localidade}\n"
+                itens_ranking = [
+                    item for item in itens if item.localidade == localidade
+                ]
+                ranking += self.define_ranking(itens_ranking)
 
         else:
-            self.define_ranking(self.itens)
+            ranking += self.define_ranking(itens)
+
+        return ranking
 
     def define_ranking(self, itens: list[Item]):
+        ranking = ""
+
         if itens:
             for index, item in enumerate(self.orderna_ranking(itens)):
-                self.ranking += f"{index+1}º - {item}\n"
+                ranking += f"{index+1}º - {item}\n"
 
         else:
-            self.ranking += "Nenhum ranking disponível"
+            ranking += "Nenhum ranking disponível"
+
+        return ranking
 
     def mostra_ranking(self):
-        print(self.titulo + self.ranking)
+        with ThreadPoolExecutor(cpu_count()) as executor:
+            ranking = executor.submit(self.monta_ranking, self.itens)
+            print(self.titulo + ranking.result())
 
     def exporta_json_ranking(self):
         itens_json = [item.define_json() for item in self.orderna_ranking(self.itens)]

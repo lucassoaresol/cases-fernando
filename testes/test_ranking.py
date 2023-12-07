@@ -267,19 +267,17 @@ class TesteRanking(unittest.TestCase):
     def teste_define_ranking(self):
         ranking = Ranking(self.ibge)
         item = Item(self.ibge, "fernando", 556346)
-        ranking.define_ranking([item])
 
         self.assertEqual(
-            ranking.ranking,
+            ranking.define_ranking([item]),
             "1º - FERNANDO - 556346\n",
         )
 
     def teste_define_ranking_none(self):
         ranking = Ranking(self.ibge)
-        ranking.define_ranking([])
 
         self.assertEqual(
-            ranking.ranking,
+            ranking.define_ranking([]),
             "Nenhum ranking disponível",
         )
 
@@ -288,7 +286,7 @@ class TesteRanking(unittest.TestCase):
         ranking.gera_ranking()
 
         self.assertEqual(
-            ranking.ranking,
+            ranking.monta_ranking(ranking.itens),
             "1º - FERNANDO - 556346\n",
         )
 
@@ -297,7 +295,7 @@ class TesteRanking(unittest.TestCase):
         ranking.gera_ranking()
 
         self.assertEqual(
-            ranking.ranking,
+            ranking.monta_ranking(ranking.itens),
             "\nLocalidade: 43\n1º - FERNANDO - 556346\n",
         )
 
@@ -306,8 +304,17 @@ class TesteRanking(unittest.TestCase):
         ranking.gera_ranking()
 
         self.assertEqual(
-            ranking.ranking,
+            ranking.monta_ranking(ranking.itens),
             "\nDécada: 2010\n\nLocalidade: 43\n1º - FERNANDO - 61551\n",
+        )
+
+    def teste_gera_ranking_com_decada(self):
+        ranking = Ranking(self.ibge, ["FERNANDO"], decadas=[2010])
+        ranking.gera_ranking()
+
+        self.assertEqual(
+            ranking.monta_ranking(ranking.itens),
+            "\nDécada: 2010\n1º - FERNANDO - 61551\n",
         )
 
     def teste_gera_ranking_com_sexo_invalido(self):
@@ -320,7 +327,7 @@ class TesteRanking(unittest.TestCase):
 
         self.assertEqual(
             ranking.mostra_ranking(),
-            print(ranking.titulo + ranking.ranking),
+            print(ranking.titulo + ranking.monta_ranking(ranking.itens)),
         )
 
     def teste_exporta_json_ranking(self):
