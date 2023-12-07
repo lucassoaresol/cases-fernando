@@ -17,7 +17,7 @@ class Ranking:
         self.decadas = decadas
         self.arquivo = arquivo
         self.itens: list[Item] = []
-        self.titulo = "Ranking geral dos nomes"
+        self.titulo = self.define_titulo()
         self.ranking = ""
 
     def define_sexo(self, sexo=""):
@@ -51,65 +51,128 @@ class Ranking:
             else:
                 raise ValueError(f"Década: {decada} não é válida.")
 
-    def define_titulo(self):
+    def define_titulo(self, titulo="Ranking geral dos nomes"):
         if self.nomes:
-            self.titulo = "Ranking dos nomes"
+            titulo = "Ranking dos nomes"
 
         if self.sexo == "M":
-            self.titulo += " do sexo Masculino"
+            titulo += " do sexo Masculino"
 
         if self.sexo == "F":
-            self.titulo += " do sexo Feminino"
+            titulo += " do sexo Feminino"
 
         if self.localidades:
-            self.titulo += f" por localidade"
+            titulo += f" por localidade"
 
         if self.decadas:
             if self.localidades:
-                self.titulo += " e década"
+                titulo += " e década"
             else:
-                self.titulo += " por década"
+                titulo += " por década"
 
-        self.titulo += ":\n"
+        titulo += ":\n"
 
-    def instancia_item(self, nome: str, frequencia=None):
-        item = Item(
-            self.ibge, nome, frequencia, self.sexo, self.localidade, self.decada
+        return titulo
+
+    def instancia_item(self, nome: str, frequencia=None, localidade="", decada=""):
+        self.itens.append(
+            Item(self.ibge, nome, frequencia, self.sexo, localidade, decada)
         )
-        self.itens.append(item)
-        return item
 
     def orderna_ranking(self, ranking: list[Item]):
         return sorted(ranking, key=lambda item: item.frequencia, reverse=True)
 
-    def busca_ranking(self, localidade="", decada=""):
-        self.localidade = self.define_localidade(localidade)
-        self.decada = self.define_decada(decada)
-        itens_ranking = []
+    def busca_ranking(self, args=(None, None, None)):
+        nome, localidade, decada = args
+        localidade = self.define_localidade(localidade)
+        decada = self.define_decada(decada)
 
-        if self.arquivo:
-            self.importa_json_nomes()
-
-        if self.nomes:
-            with ThreadPoolExecutor(cpu_count()) as executor:
-                itens_ranking = executor.map(self.instancia_item, self.nomes)
+        if nome:
+            self.instancia_item(nome, localidade=localidade, decada=decada)
 
         else:
             resposta = self.ibge.busca_ranking(
-                sexo=self.sexo, localidade=self.localidade, decada=self.decada
+                sexo=self.sexo, localidade=localidade, decada=decada
             )
 
             if resposta:
                 dados = resposta[0]["res"]
                 for res in dados:
-                    itens_ranking.append(
-                        self.instancia_item(
-                            res["nome"],
-                            res["frequencia"],
-                        )
+                    self.instancia_item(
+                        res["nome"], res["frequencia"], localidade, decada
                     )
 
-        return itens_ranking
+    def multi_ranking(self, combinacoes: list):
+        if combinacoes:
+            with ThreadPoolExecutor(cpu_count()) as executor:
+                executor.map(self.busca_ranking, combinacoes)
+        else:
+            self.busca_ranking()
+
+    def gera_ranking(self):
+        combinacoes = []
+
+        if self.arquivo:
+            self.importa_json_nomes()
+
+        if self.nomes:
+            for nome in self.nomes:
+                if self.localidades:
+                    for localidade in self.localidades:
+                        if self.decadas:
+                            for decada in self.decadas:
+                                combinacoes.append((nome, localidade, decada))
+                        else:
+                            combinacoes.append((nome, localidade, None))
+
+                elif self.decadas:
+                    for decada in self.decadas:
+                        combinacoes.append((nome, None, decada))
+
+                else:
+                    combinacoes.append((nome, None, None))
+
+        elif self.localidades:
+            for localidade in self.localidades:
+                if self.decadas:
+                    for decada in self.decadas:
+                        combinacoes.append((None, localidade, decada))
+                else:
+                    combinacoes.append((None, localidade, None))
+
+        elif self.decadas:
+            for decada in self.decadas:
+                combinacoes.append((None, None, decada))
+
+        self.multi_ranking(combinacoes)
+        self.monta_ranking()
+
+    def monta_ranking(self):
+        if self.decadas:
+            for decada in self.decadas:
+                self.ranking += f"\nDécada: {decada}\n"
+                if self.localidades:
+                    for localidade in self.localidades:
+                        self.ranking += f"\nLocalidade: {localidade}\n"
+                        itens = [
+                            item
+                            for item in self.itens
+                            if item.localidade == localidade and item.decada == decada
+                        ]
+                        self.define_ranking(itens)
+
+                else:
+                    itens = [item for item in self.itens if item.decada == decada]
+                    self.define_ranking(itens)
+
+        elif self.localidades:
+            for localidade in self.localidades:
+                self.ranking += f"\nLocalidade: {localidade}\n"
+                itens = [item for item in self.itens if item.localidade == localidade]
+                self.define_ranking(itens)
+
+        else:
+            self.define_ranking(self.itens)
 
     def define_ranking(self, itens: list[Item]):
         if itens:
@@ -119,35 +182,7 @@ class Ranking:
         else:
             self.ranking += "Nenhum ranking disponível"
 
-    def gera_ranking(self):
-        if self.decadas:
-            with ThreadPoolExecutor(cpu_count()) as executor:
-                for decada in self.decadas:
-                    self.ranking += f"\nDécada: {decada}\n"
-                    if self.localidades:
-                        for localidade in self.localidades:
-                            self.ranking += f"\nLocalidade: {localidade}\n"
-                            itens = executor.submit(
-                                self.busca_ranking, localidade, decada
-                            )
-                            self.define_ranking(itens.result())
-
-                    else:
-                        itens = executor.submit(self.busca_ranking, None, decada)
-                        self.define_ranking(itens.result())
-
-        elif self.localidades:
-            with ThreadPoolExecutor(cpu_count()) as executor:
-                for localidade in self.localidades:
-                    self.ranking += f"\nLocalidade: {localidade}\n"
-                    itens = executor.submit(self.busca_ranking, localidade)
-                    self.define_ranking(itens.result())
-
-        else:
-            self.define_ranking(self.busca_ranking())
-
     def mostra_ranking(self):
-        self.define_titulo()
         print(self.titulo + self.ranking)
 
     def exporta_json_ranking(self):
