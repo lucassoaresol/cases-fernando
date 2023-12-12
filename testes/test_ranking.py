@@ -1,8 +1,8 @@
 from itens.item import Item
-from rankings.ranking import Ranking
+from rankings.ranking import Ranking, processar_combinacao
 from services.ibge import Ibge
 from testes import constantes
-from unittest.mock import Mock
+from unittest.mock import patch, Mock
 import json
 import os
 import unittest
@@ -14,6 +14,18 @@ class TesteRanking(unittest.TestCase):
         ibge.busca_localidade.return_value = constantes.siglas_estados
         ibge.busca_ranking.return_value = constantes.nome_sem_parametros
         self.ibge = ibge
+
+    def teste_processar_combinacao(self):
+        itens = processar_combinacao((self.ibge, "fernando", None, None, 2010))
+
+        self.assertEqual(len(itens), 1)
+
+    def teste_processar_combinacao_geral(self):
+        ibge = Mock(Ibge)
+        ibge.busca_ranking.return_value = constantes.ranking_geral
+        itens = processar_combinacao((ibge, None, None, None, None))
+
+        self.assertEqual(len(itens), 20)
 
     def teste_titulo_sem_nomes(self):
         ranking = Ranking(self.ibge)
@@ -170,6 +182,19 @@ class TesteRanking(unittest.TestCase):
             "Ranking dos nomes por década:\n",
         )
 
+    def teste_adiciona_item(self):
+        ranking = Ranking(self.ibge)
+        item = Item(self.ibge, "fernando", 556346)
+        ranking.adiciona_item(item)
+
+        self.assertEqual(len(ranking.itens), 1)
+
+    def teste_instacia_item(self):
+        ranking = Ranking(self.ibge)
+        ranking.instancia_item("fernando", 556346)
+
+        self.assertEqual(len(ranking.itens), 1)
+
     def teste_orderna_ranking(self):
         ranking = Ranking(self.ibge)
         item1 = Item(self.ibge, "fernando", 556346)
@@ -181,29 +206,73 @@ class TesteRanking(unittest.TestCase):
         )
 
     def teste_busca_ranking(self):
-        ranking = Ranking(self.ibge, ["FERNDANDO"])
-        ranking.gera_ranking()
+        ibge = Mock(Ibge)
+        ibge.busca_ranking.return_value = constantes.ranking_geral
+        ranking = Ranking(ibge)
+        ranking.busca_ranking()
 
-        nomes = [item.nome for item in ranking.itens]
+        self.assertEqual(len(ranking.itens), 20)
 
-        self.assertListEqual(["FERNDANDO"], nomes)
-
-    def teste_busca_ranking_arquivo(self):
+    def teste_gera_combinacoes_arquivo(self):
         itens_json = ["FERNANDO", "MARIA", "LUCAS", "CARLOS"]
 
         with open("nomes.json", "w") as json_file:
             json.dump(itens_json, json_file)
 
         ranking = Ranking(self.ibge, arquivo="nomes")
-        ranking.gera_ranking()
+        combinacoes = ranking.gera_combinacoes()
 
-        nomes = [item.nome for item in ranking.itens]
-
-        self.assertListEqual(itens_json, nomes)
+        self.assertEqual(len(combinacoes), 4)
+        self.assertListEqual(itens_json, ranking.nomes)
 
         os.remove("nomes.json")
 
-    def teste_busca_ranking_sem_nomes(self):
+    def teste_gera_combinacoes_nomes_e_localidades(self):
+        ranking = Ranking(
+            self.ibge, nomes=["FERNANDO", "MARIA", "LUCAS", "CARLOS"], localidades=[43]
+        )
+        combinacoes = ranking.gera_combinacoes()
+
+        self.assertEqual(len(combinacoes), 4)
+
+    def teste_gera_combinacoes_nomes_localidades_e_decadas(self):
+        ranking = Ranking(
+            self.ibge,
+            nomes=["FERNANDO", "MARIA", "LUCAS", "CARLOS"],
+            localidades=[43],
+            decadas=[2000],
+        )
+        combinacoes = ranking.gera_combinacoes()
+
+        self.assertEqual(len(combinacoes), 4)
+
+    def teste_gera_combinacoes_nomes_e_decadas(self):
+        ranking = Ranking(
+            self.ibge, nomes=["FERNANDO", "MARIA", "LUCAS", "CARLOS"], decadas=[2000]
+        )
+        combinacoes = ranking.gera_combinacoes()
+
+        self.assertEqual(len(combinacoes), 4)
+
+    def teste_gera_combinacoes_localidades(self):
+        ranking = Ranking(self.ibge, localidades=[43])
+        combinacoes = ranking.gera_combinacoes()
+
+        self.assertEqual(len(combinacoes), 1)
+
+    def teste_gera_combinacoes_localidades_e_decadas(self):
+        ranking = Ranking(self.ibge, localidades=[43], decadas=[2000])
+        combinacoes = ranking.gera_combinacoes()
+
+        self.assertEqual(len(combinacoes), 1)
+
+    def teste_gera_combinacoes_decadas(self):
+        ranking = Ranking(self.ibge, decadas=[2000])
+        combinacoes = ranking.gera_combinacoes()
+
+        self.assertEqual(len(combinacoes), 1)
+
+    def teste_gera_ranking(self):
         ibge = Mock(Ibge)
         ibge.busca_ranking.return_value = constantes.ranking_geral
         ranking = Ranking(ibge)
@@ -211,58 +280,49 @@ class TesteRanking(unittest.TestCase):
 
         self.assertEqual(len(ranking.itens), 20)
 
-    def teste_busca_ranking_sem_nomes_com_localidade(self):
-        ibge = Mock(Ibge)
-        ibge.busca_ranking.return_value = constantes.ranking_geral
-        ibge.busca_localidade.return_value = constantes.siglas_estados
-        ranking = Ranking(ibge, localidades=[43])
-        ranking.gera_ranking()
+    def teste_monta_ranking(self):
+        ranking = Ranking(self.ibge, ["FERNANDO"])
+        item = Item(self.ibge, "fernando")
+        ranking.adiciona_item(item)
+        ranking.monta_ranking(ranking.itens)
 
-        self.assertEqual(len(ranking.itens), 20)
+        self.assertEqual(
+            ranking.monta_ranking(ranking.itens),
+            "1º - FERNANDO - 556346\n",
+        )
 
-    def teste_busca_ranking_sem_nomes_com_localidade_e_decada(self):
-        ibge = Mock(Ibge)
-        ibge.busca_ranking.return_value = constantes.ranking_geral
-        ibge.busca_localidade.return_value = constantes.siglas_estados
-        ranking = Ranking(ibge, localidades=[43], decadas=[1990])
-        ranking.gera_ranking()
+    def teste_monta_ranking_com_localidades(self):
+        ranking = Ranking(self.ibge, ["FERNANDO"], localidades=[43])
+        item = Item(self.ibge, "fernando", 556346, localidade=43)
+        ranking.adiciona_item(item)
+        ranking.monta_ranking(ranking.itens)
 
-        self.assertEqual(len(ranking.itens), 20)
+        self.assertEqual(
+            ranking.monta_ranking(ranking.itens),
+            "\nLocalidade: 43\n1º - FERNANDO - 556346\n",
+        )
 
-    def teste_busca_ranking_sem_nomes_com_decada(self):
-        ibge = Mock(Ibge)
-        ibge.busca_ranking.return_value = constantes.ranking_geral
-        ranking = Ranking(ibge, decadas=[1990])
-        ranking.gera_ranking()
+    def teste_monta_ranking_com_localidades_e_decadas(self):
+        ranking = Ranking(self.ibge, ["FERNANDO"], localidades=[43], decadas=[2010])
+        item = Item(self.ibge, "fernando", 556346, localidade=43, decada=2010)
+        ranking.adiciona_item(item)
+        ranking.monta_ranking(ranking.itens)
 
-        self.assertEqual(len(ranking.itens), 20)
+        self.assertEqual(
+            ranking.monta_ranking(ranking.itens),
+            "\nDécada: 2010\n\nLocalidade: 43\n1º - FERNANDO - 556346\n",
+        )
 
-    def teste_busca_ranking_com_localidade_invalida(self):
-        ibge = Mock(Ibge)
-        ibge.busca_localidade.return_value = None
-        ranking = Ranking(ibge)
+    def teste_monta_ranking_com_decadas(self):
+        ranking = Ranking(self.ibge, ["FERNANDO"], decadas=[2010])
+        item = Item(self.ibge, "fernando", decada=2010)
+        ranking.adiciona_item(item)
+        ranking.monta_ranking(ranking.itens)
 
-        with self.assertRaises(ValueError):
-            ranking.busca_ranking((None, "rss"))
-
-    def teste_busca_ranking_com_decada_invalida(self):
-        ranking = Ranking(self.ibge)
-
-        with self.assertRaises(ValueError):
-            ranking.busca_ranking((None, None, 1900))
-
-    def teste_busca_ranking_com_decada_invalida_texto(self):
-        ranking = Ranking(self.ibge)
-
-        with self.assertRaises(ValueError):
-            ranking.busca_ranking((None, None, "rsrs"))
-
-    def teste_define_localidade_invalida(self):
-        ibge = Mock(Ibge)
-        ibge.busca_localidade.return_value = None
-        ranking = Ranking(ibge)
-        with self.assertRaises(ValueError):
-            ranking.define_localidade("bk")
+        self.assertEqual(
+            ranking.monta_ranking(ranking.itens),
+            "\nDécada: 2010\n1º - FERNANDO - 61551\n",
+        )
 
     def teste_define_ranking(self):
         ranking = Ranking(self.ibge)
@@ -281,49 +341,11 @@ class TesteRanking(unittest.TestCase):
             "Nenhum ranking disponível",
         )
 
-    def teste_gera_ranking(self):
-        ranking = Ranking(self.ibge, ["FERNANDO"])
-        ranking.gera_ranking()
-
-        self.assertEqual(
-            ranking.monta_ranking(ranking.itens),
-            "1º - FERNANDO - 556346\n",
-        )
-
-    def teste_gera_ranking_com_localidades(self):
-        ranking = Ranking(self.ibge, ["FERNANDO"], localidades=[43])
-        ranking.gera_ranking()
-
-        self.assertEqual(
-            ranking.monta_ranking(ranking.itens),
-            "\nLocalidade: 43\n1º - FERNANDO - 556346\n",
-        )
-
-    def teste_gera_ranking_com_localidades_e_decadas(self):
-        ranking = Ranking(self.ibge, ["FERNANDO"], localidades=[43], decadas=[2010])
-        ranking.gera_ranking()
-
-        self.assertEqual(
-            ranking.monta_ranking(ranking.itens),
-            "\nDécada: 2010\n\nLocalidade: 43\n1º - FERNANDO - 61551\n",
-        )
-
-    def teste_gera_ranking_com_decada(self):
-        ranking = Ranking(self.ibge, ["FERNANDO"], decadas=[2010])
-        ranking.gera_ranking()
-
-        self.assertEqual(
-            ranking.monta_ranking(ranking.itens),
-            "\nDécada: 2010\n1º - FERNANDO - 61551\n",
-        )
-
-    def teste_gera_ranking_com_sexo_invalido(self):
-        with self.assertRaises(ValueError):
-            Ranking(self.ibge, sexo="bk")
-
     def teste_mostra_ranking(self):
         ranking = Ranking(self.ibge, ["FERNANDO"])
-        ranking.gera_ranking()
+        item = Item(self.ibge, "fernando", 556346)
+        ranking.adiciona_item(item)
+        ranking.mostra_ranking()
 
         self.assertEqual(
             ranking.mostra_ranking(),
@@ -332,7 +354,10 @@ class TesteRanking(unittest.TestCase):
 
     def teste_exporta_json_ranking(self):
         ranking = Ranking(self.ibge, ["FERNANDO"], "M", decadas=[1990])
-        ranking.gera_ranking()
+        item = Item(
+            self.ibge, "fernando", 169079, sexo="M", decada=1990, localidade="BR"
+        )
+        ranking.adiciona_item(item)
         nome_arquivo = ranking.exporta_json_ranking()
 
         self.assertTrue(os.path.exists(nome_arquivo))

@@ -1,9 +1,30 @@
-from concurrent.futures import ThreadPoolExecutor
 from itens.item import Item
-from multiprocessing import cpu_count
+from multiprocessing import cpu_count, Pool
 from services.ibge import Ibge
 import time
 import json
+
+
+def processar_combinacao(args):
+    ibge, nome, sexo, localidade, decada = args
+    itens = []
+
+    if nome:
+        item = Item(ibge, nome, sexo=sexo, localidade=localidade, decada=decada)
+        itens.append(item)
+
+    else:
+        resposta = ibge.busca_ranking(sexo=sexo, localidade=localidade, decada=decada)
+
+        if resposta:
+            dados = resposta[0]["res"]
+            for res in dados:
+                item = Item(
+                    ibge, res["nome"], res["frequencia"], sexo, localidade, decada
+                )
+                itens.append(item)
+
+    return itens
 
 
 class Ranking:
@@ -12,43 +33,12 @@ class Ranking:
     ) -> None:
         self.ibge = ibge
         self.nomes = nomes
-        self.sexo = self.define_sexo(sexo)
+        self.sexo = sexo
         self.localidades = localidades
         self.decadas = decadas
         self.arquivo = arquivo
         self.itens: list[Item] = []
         self.titulo = self.define_titulo()
-
-    def define_sexo(self, sexo=""):
-        if sexo:
-            sexo = sexo.upper()
-            if sexo == "M" or sexo == "F":
-                return sexo
-            else:
-                raise ValueError(
-                    f"Sexo: {sexo} não é válido. \nDigite M (Masculino) ou F (Feminino)."
-                )
-
-    def define_localidade(self, localidade=""):
-        if not localidade or localidade == "BR":
-            return "BR"
-
-        resposta = self.ibge.busca_localidade(localidade)
-
-        if resposta:
-            return resposta["id"]
-        else:
-            raise ValueError(f"Localidade: {localidade} não é válida.")
-
-    def define_decada(self, decada=0):
-        if decada:
-            if isinstance(decada, int):
-                if decada < 1930 or decada > 2010 or decada % 10 != 0:
-                    raise ValueError(f"Década: {decada} não é válida.")
-                else:
-                    return decada
-            else:
-                raise ValueError(f"Década: {decada} não é válida.")
 
     def define_titulo(self, titulo="Ranking geral dos nomes"):
         if self.nomes:
@@ -73,42 +63,26 @@ class Ranking:
 
         return titulo
 
+    def adiciona_item(self, item: Item):
+        self.itens.append(item)
+
     def instancia_item(self, nome: str, frequencia=None, localidade="", decada=""):
-        self.itens.append(
+        self.adiciona_item(
             Item(self.ibge, nome, frequencia, self.sexo, localidade, decada)
         )
 
     def orderna_ranking(self, ranking: list[Item]):
         return sorted(ranking, key=lambda item: item.frequencia, reverse=True)
 
-    def busca_ranking(self, args=(None, None, None)):
-        nome, localidade, decada = args
-        localidade = self.define_localidade(localidade)
-        decada = self.define_decada(decada)
+    def busca_ranking(self):
+        resposta = self.ibge.busca_ranking(sexo=self.sexo)
 
-        if nome:
-            self.instancia_item(nome, localidade=localidade, decada=decada)
+        if resposta:
+            dados = resposta[0]["res"]
+            for res in dados:
+                self.instancia_item(res["nome"], res["frequencia"])
 
-        else:
-            resposta = self.ibge.busca_ranking(
-                sexo=self.sexo, localidade=localidade, decada=decada
-            )
-
-            if resposta:
-                dados = resposta[0]["res"]
-                for res in dados:
-                    self.instancia_item(
-                        res["nome"], res["frequencia"], localidade, decada
-                    )
-
-    def multi_ranking(self, combinacoes: list):
-        if combinacoes:
-            with ThreadPoolExecutor(cpu_count()) as executor:
-                executor.map(self.busca_ranking, combinacoes)
-        else:
-            self.busca_ranking()
-
-    def gera_ranking(self):
+    def gera_combinacoes(self):
         combinacoes = []
 
         if self.arquivo:
@@ -120,30 +94,48 @@ class Ranking:
                     for localidade in self.localidades:
                         if self.decadas:
                             for decada in self.decadas:
-                                combinacoes.append((nome, localidade, decada))
+                                combinacoes.append(
+                                    (self.ibge, nome, self.sexo, localidade, decada)
+                                )
                         else:
-                            combinacoes.append((nome, localidade, None))
+                            combinacoes.append(
+                                (self.ibge, nome, self.sexo, localidade, None)
+                            )
 
                 elif self.decadas:
                     for decada in self.decadas:
-                        combinacoes.append((nome, None, decada))
+                        combinacoes.append((self.ibge, nome, self.sexo, None, decada))
 
                 else:
-                    combinacoes.append((nome, None, None))
+                    combinacoes.append((self.ibge, nome, self.sexo, None, None))
 
         elif self.localidades:
             for localidade in self.localidades:
                 if self.decadas:
                     for decada in self.decadas:
-                        combinacoes.append((None, localidade, decada))
+                        combinacoes.append(
+                            (self.ibge, None, self.sexo, localidade, decada)
+                        )
                 else:
-                    combinacoes.append((None, localidade, None))
+                    combinacoes.append((self.ibge, None, self.sexo, localidade, None))
 
         elif self.decadas:
             for decada in self.decadas:
-                combinacoes.append((None, None, decada))
+                combinacoes.append((self.ibge, None, self.sexo, None, decada))
 
-        self.multi_ranking(combinacoes)
+        return combinacoes
+
+    def gera_ranking(self):
+        combinacoes = self.gera_combinacoes()
+
+        if combinacoes:
+            with Pool(cpu_count()) as executor:
+                todos_itens = executor.map(processar_combinacao, combinacoes)
+            for itens in todos_itens:
+                for item in itens:
+                    self.adiciona_item(item)
+        else:
+            self.busca_ranking()
 
     def monta_ranking(self, itens: list[Item]):
         ranking = ""
@@ -191,9 +183,8 @@ class Ranking:
         return ranking
 
     def mostra_ranking(self):
-        with ThreadPoolExecutor(cpu_count()) as executor:
-            ranking = executor.submit(self.monta_ranking, self.itens)
-            print(self.titulo + ranking.result())
+        ranking = self.monta_ranking(self.itens)
+        print(self.titulo + ranking)
 
     def exporta_json_ranking(self):
         itens_json = [item.define_json() for item in self.orderna_ranking(self.itens)]

@@ -21,6 +21,26 @@ class TestItem(unittest.TestCase):
         with self.assertRaises(ValueError):
             Item(self.ibge, "FERNANDO", sexo="bk")
 
+    def teste_criar_item_sem_localidade(self):
+        item = Item(self.ibge, "FERNANDO")
+        self.assertEqual(item.define_localidade(), "BR")
+
+    def teste_criar_item_com_localidade(self):
+        item = Item(self.ibge, "FERNANDO", localidade="RS")
+        self.assertEqual(item.define_localidade("RS"), 43)
+
+    def teste_criar_item_com_localidade_invalida(self):
+        ibge = Mock(Ibge)
+        ibge.busca_ranking.return_value = constantes.nome_sem_parametros
+        ibge.busca_localidade.return_value = None
+        item = Item(ibge, "FERNANDO", localidade="bk")
+        with self.assertRaises(ValueError):
+            item.define_localidade("bk")
+
+    def teste_criar_item_com_decada(self):
+        item = Item(self.ibge, "FERNANDO", decada=2010)
+        self.assertEqual(item.frequencia, 61551)
+
     def teste_criar_item_com_decada_invalida(self):
         with self.assertRaises(ValueError):
             Item(self.ibge, "FERNANDO", decada=1900)

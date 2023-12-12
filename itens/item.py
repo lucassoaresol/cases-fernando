@@ -28,6 +28,17 @@ class Item:
                     f"Sexo: {sexo} não é válido. \nDigite M (Masculino) ou F (Feminino)."
                 )
 
+    def define_localidade(self, localidade=""):
+        if not localidade or localidade == "BR":
+            return "BR"
+
+        resposta = self.ibge.busca_localidade(localidade)
+
+        if resposta:
+            return resposta["id"]
+        else:
+            raise ValueError(f"Localidade: {localidade} não é válida.")
+
     def define_decada(self, decada=0):
         if decada:
             if isinstance(decada, int):
