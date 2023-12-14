@@ -1,5 +1,6 @@
 from itens.item import Item
-from multiprocessing import cpu_count, Pool
+from multiprocessing import cpu_count
+from multiprocessing.dummy import Pool
 from services.ibge import Ibge
 import time
 import json
