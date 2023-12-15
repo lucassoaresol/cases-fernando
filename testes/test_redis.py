@@ -11,21 +11,21 @@ class TestRedis(unittest.TestCase):
         Cache()
 
     @patch("services.cache.redis.Redis.get")
-    def teste_busca_key_exists(self, mock_redis):
+    def teste_busca(self, mock_redis):
         cache = Cache()
         mock_redis.return_value = b'"value"'
         value = cache.busca("key")
         self.assertEqual(value, "value")
 
     @patch("services.cache.redis.Redis.get")
-    def teste_busca_key_not_exists(self, mock_redis):
+    def teste_busca_none(self, mock_redis):
         cache = Cache()
         mock_redis.return_value = None
         value = cache.busca("key")
         self.assertIsNone(value)
 
     @patch("services.cache.redis.Redis.get")
-    def teste_busca_key_not_exists_except(self, mock_redis):
+    def teste_busca_except(self, mock_redis):
         cache = Cache()
         mock_redis.side_effect = redis.RedisError()
         value = cache.busca("key")
@@ -44,13 +44,13 @@ class TestRedis(unittest.TestCase):
         cache.define("key", "value")
 
     @patch("services.cache.redis.Redis.ping")
-    def teste_verificar_conexao_success(self, mock_redis):
+    def teste_verificar_conexao(self, mock_redis):
         cache = Cache()
         mock_redis.return_value = True
         self.assertTrue(cache.verificar_conexao())
 
     @patch("services.cache.redis.Redis.ping")
-    def teste_verificar_conexao_failure(self, mock_redis):
+    def teste_verificar_conexao_except(self, mock_redis):
         cache = Cache()
         mock_redis.return_value = False
         mock_redis.side_effect = redis.ConnectionError()

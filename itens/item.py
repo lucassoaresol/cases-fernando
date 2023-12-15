@@ -14,7 +14,7 @@ class Item:
         self.ibge = ibge
         self.nome = nome.upper()
         self.sexo = self.define_sexo(sexo)
-        self.localidade = localidade
+        self.localidade = self.define_localidade(localidade)
         self.decada = self.define_decada(decada)
         self.frequencia = self.busca_frequencia(frequencia)
 

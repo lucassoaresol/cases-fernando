@@ -120,6 +120,93 @@ ranking_geral = [
     }
 ]
 
+ranking_geral_sexo = [
+    {
+        "localidade": "BR",
+        "sexo": "F",
+        "res": [
+            {"nome": "MARIA", "frequencia": 11694738, "ranking": 1},
+            {"nome": "ANA", "frequencia": 3079729, "ranking": 2},
+            {"nome": "FRANCISCA", "frequencia": 721637, "ranking": 3},
+            {"nome": "ANTONIA", "frequencia": 588783, "ranking": 4},
+            {"nome": "ADRIANA", "frequencia": 565621, "ranking": 5},
+            {"nome": "JULIANA", "frequencia": 562589, "ranking": 6},
+            {"nome": "MARCIA", "frequencia": 551855, "ranking": 7},
+            {"nome": "FERNANDA", "frequencia": 531607, "ranking": 8},
+            {"nome": "PATRICIA", "frequencia": 529446, "ranking": 9},
+            {"nome": "ALINE", "frequencia": 509869, "ranking": 10},
+            {"nome": "SANDRA", "frequencia": 479230, "ranking": 11},
+            {"nome": "CAMILA", "frequencia": 469851, "ranking": 12},
+            {"nome": "AMANDA", "frequencia": 464624, "ranking": 13},
+            {"nome": "BRUNA", "frequencia": 460770, "ranking": 14},
+            {"nome": "JESSICA", "frequencia": 456472, "ranking": 15},
+            {"nome": "LETICIA", "frequencia": 434056, "ranking": 16},
+            {"nome": "JULIA", "frequencia": 430067, "ranking": 17},
+            {"nome": "LUCIANA", "frequencia": 429769, "ranking": 18},
+            {"nome": "VANESSA", "frequencia": 417512, "ranking": 19},
+            {"nome": "MARIANA", "frequencia": 381778, "ranking": 20},
+        ],
+    }
+]
+
+ranking_geral_localidade = [
+    {
+        "localidade": "43",
+        "sexo": None,
+        "res": [
+            {"nome": "MARIA", "frequencia": 322238, "ranking": 1},
+            {"nome": "JOAO", "frequencia": 163371, "ranking": 2},
+            {"nome": "JOSE", "frequencia": 147647, "ranking": 3},
+            {"nome": "ANA", "frequencia": 126284, "ranking": 4},
+            {"nome": "PAULO", "frequencia": 108457, "ranking": 5},
+            {"nome": "LUIS", "frequencia": 84616, "ranking": 6},
+            {"nome": "CARLOS", "frequencia": 78861, "ranking": 7},
+            {"nome": "ANTONIO", "frequencia": 68632, "ranking": 8},
+            {"nome": "LUCAS", "frequencia": 67307, "ranking": 9},
+            {"nome": "LUIZ", "frequencia": 64793, "ranking": 10},
+            {"nome": "PEDRO", "frequencia": 62915, "ranking": 11},
+            {"nome": "GABRIEL", "frequencia": 58247, "ranking": 12},
+            {"nome": "RAFAEL", "frequencia": 52060, "ranking": 13},
+            {"nome": "EDUARDO", "frequencia": 51671, "ranking": 14},
+            {"nome": "MARCOS", "frequencia": 45115, "ranking": 15},
+            {"nome": "MARCELO", "frequencia": 44490, "ranking": 16},
+            {"nome": "RODRIGO", "frequencia": 44347, "ranking": 17},
+            {"nome": "JORGE", "frequencia": 44323, "ranking": 18},
+            {"nome": "VERA", "frequencia": 43765, "ranking": 19},
+            {"nome": "LEONARDO", "frequencia": 42832, "ranking": 20},
+        ],
+    }
+]
+
+ranking_com_localidade_decada = [
+    {
+        "localidade": "43",
+        "sexo": None,
+        "res": [
+            {"nome": "JOAO", "frequencia": 36775, "ranking": 1},
+            {"nome": "GABRIEL", "frequencia": 32954, "ranking": 2},
+            {"nome": "MARIA", "frequencia": 29413, "ranking": 3},
+            {"nome": "LUCAS", "frequencia": 27472, "ranking": 4},
+            {"nome": "ANA", "frequencia": 27379, "ranking": 5},
+            {"nome": "JULIA", "frequencia": 19091, "ranking": 6},
+            {"nome": "EDUARDA", "frequencia": 18145, "ranking": 7},
+            {"nome": "EDUARDO", "frequencia": 18080, "ranking": 8},
+            {"nome": "GUILHERME", "frequencia": 17803, "ranking": 9},
+            {"nome": "VITORIA", "frequencia": 17589, "ranking": 10},
+            {"nome": "PEDRO", "frequencia": 17336, "ranking": 11},
+            {"nome": "GUSTAVO", "frequencia": 16312, "ranking": 12},
+            {"nome": "MATEUS", "frequencia": 16098, "ranking": 13},
+            {"nome": "LEONARDO", "frequencia": 14069, "ranking": 14},
+            {"nome": "BRUNO", "frequencia": 13822, "ranking": 15},
+            {"nome": "VITOR", "frequencia": 13657, "ranking": 16},
+            {"nome": "AMANDA", "frequencia": 12397, "ranking": 17},
+            {"nome": "FELIPE", "frequencia": 11782, "ranking": 18},
+            {"nome": "RAFAEL", "frequencia": 11567, "ranking": 19},
+            {"nome": "GABRIELA", "frequencia": 10958, "ranking": 20},
+        ],
+    }
+]
+
 ranking_com_decada = [
     {
         "localidade": "BR",
